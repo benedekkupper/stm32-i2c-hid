@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "i2c_hid_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,6 +95,7 @@ int main(void)
   MX_DMA_Init();
   /* USER CODE BEGIN 2 */
 
+  create_i2c_hid_device();
   /* USER CODE END 2 */
 
   /* Infinite loop */

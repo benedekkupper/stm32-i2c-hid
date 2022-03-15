@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -99,7 +99,10 @@ void Error_Handler(void);
 void   MX_I2C2_Init(void);
 void   MX_I2C1_Init(void);
 /* USER CODE BEGIN Private defines */
-
+static inline void set_led(int index, bool value)
+{
+    HAL_GPIO_WritePin(GPIOC, LD3_Pin << index, (GPIO_PinState)(value));
+}
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
