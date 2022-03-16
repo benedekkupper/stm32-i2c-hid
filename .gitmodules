@@ -1,0 +1,15 @@
+[submodule "etl"]
+	path = etl
+	url = https://github.com/ETLCPP/etl.git
+[submodule "hid-rdf"]
+	path = hid-rdf
+	url = https://github.com/IntergatedCircuits/hid-rdf.git
+[submodule "Drivers/CMSIS/Core"]
+	path = Drivers/CMSIS/Core
+	url = https://github.com/STMicroelectronics/cmsis_core.git
+[submodule "Drivers/CMSIS/Device/ST/STM32F0xx"]
+	path = Drivers/CMSIS/Device/ST/STM32F0xx
+	url = https://github.com/STMicroelectronics/cmsis_device_f0.git
+[submodule "Drivers/STM32F0xx_HAL_Driver"]
+	path = Drivers/STM32F0xx_HAL_Driver
+	url = https://github.com/STMicroelectronics/stm32f0xx_hal_driver.git
