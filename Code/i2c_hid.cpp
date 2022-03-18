@@ -16,10 +16,6 @@ device::device(hid::application &app, const hid::product_info &pinfo,
         i2c::address address, uint16_t hid_descriptor_reg_address)
     : _app(app), _pinfo(pinfo), _bus_address(address), _hid_descriptor_reg(hid_descriptor_reg_address)
 {
-    // TODO always make sure all reports can fit, including header
-    assert(_buffer.size() >= sizeof(descriptor));
-    assert(_buffer.size() >= (REPORT_LENGTH_SIZE + _app.report_protocol().max_input_size));
-
     i2c::slave::instance().register_module(address, this, &device::process_start, &device::process_stop);
 }
 
@@ -51,9 +47,17 @@ void device::link_reset()
 
 hid::result device::receive_report(const span<uint8_t> &data)
 {
-    // save the target buffer for when the transfer is made
-    _output_buffer = data;
-    return hid::result::OK;
+    if ((_output_buffer.size() == 0) || (_stage == 0))
+    {
+        // save the target buffer for when the transfer is made
+        _output_buffer = data;
+        return hid::result::OK;
+    }
+    else
+    {
+        // the previously passed buffer is being used for receiving data
+        return hid::result::BUSY;
+    }
 }
 
 hid::result device::send_report(const span<const uint8_t> &data, hid::report_type type)
@@ -186,31 +190,26 @@ bool device::queue_input_report(const span<const uint8_t> &data)
 
 bool device::get_input()
 {
-    span<uint8_t> buffer { _buffer.data(), REPORT_LENGTH_SIZE + _app.report_protocol().max_input_size };
-    // TODO: clear out the buffer's unused bytes
-
     // send the next report from the queue
     span<const uint8_t> input_data;
     if (_in_queue.front(input_data) && (input_data.size() > 0))
     {
-        auto &report_length = *reinterpret_cast<le_uint16_t*>(buffer.data());
+        auto &report_length = *reinterpret_cast<le_uint16_t*>(_buffer.data());
         report_length = static_cast<uint16_t>(input_data.size());
 
-        // copy report into full size buffer
-        std::copy(input_data.begin(), input_data.end(),
-                buffer.data() + sizeof(report_length));
+        i2c::slave::instance().send(&report_length, input_data);
     }
     else
     {
         // this is a reset, or the master is only checking our presence on the bus
-        auto &reset_sentinel = *reinterpret_cast<le_uint16_t*>(buffer.data());
+        auto &reset_sentinel = *reinterpret_cast<le_uint16_t*>(_buffer.data());
         reset_sentinel = 0;
+
+        i2c::slave::instance().send(&reset_sentinel);
     }
 
-    // send full size buffer (slave cannot control the length of the transfer, master will always read max size)
-    i2c::slave::instance().send(span<const uint8_t>(buffer));
-
-    // de-assert interrupt line until stop
+    // de-assert interrupt line now, as if it's only done at stop,
+    // the host will try to read another report
     i2c::slave::instance().set_pin_interrupt(false);
 
     return true;
@@ -233,8 +232,8 @@ bool device::process_start(i2c::direction dir, size_t data_length)
         else
         {
             // first part of the transfer, receive register / command
-            i2c::slave::instance().receive(_buffer);
-            _stage++;
+            _stage = 1;
+            i2c::slave::instance().receive(_buffer, _output_buffer);
             success = true;
         }
     }
@@ -247,19 +246,25 @@ bool device::process_start(i2c::direction dir, size_t data_length)
     return success;
 }
 
-void device::set_output_report(size_t data_length)
+void device::set_power(bool powered)
 {
-    constexpr size_t reg_size = sizeof(le_uint16_t);
-    uint16_t length = *reinterpret_cast<const le_uint16_t*>(_buffer.data() + reg_size);
-    size_t header_size = reg_size + sizeof(length);
+    if (_powered != powered)
+    {
+        _powered = powered;
+        _app.set_power_mode(powered);
+    }
+}
+
+bool device::set_report(hid::report_type type, const span<const uint8_t> &data)
+{
+    uint16_t length = *reinterpret_cast<const le_uint16_t*>(data.data());
     size_t report_length = length - sizeof(length);
 
     // check length validity
-    if ((data_length == (reg_size + length)) && (length > (sizeof(length))) &&
-        (report_length <= _output_buffer.size()))
+    if ((data.size() == length) && (report_length <= _output_buffer.size()))
     {
-#if 0
         // copy/move the output report into the requested buffer
+        size_t header_size = (data.data() - _buffer.data()) + sizeof(length);
         size_t offset = _buffer.size() - header_size;
 
         // move the output buffer contents down by offset
@@ -271,33 +276,17 @@ void device::set_output_report(size_t data_length)
         }
 
         // copy first part from GP buffer into provided buffer
-        std::copy(_buffer.data() + header_size, _buffer.data() + std::min(_buffer.size(), data_length),
-                _output_buffer.data());
-#endif
-        std::copy(_buffer.data() + header_size, _buffer.data() + data_length, _output_buffer.data());
+        std::copy(data.begin() + sizeof(length), data.end(),
+                _output_buffer.begin());
+
+        auto report = _output_buffer.subspan(0, report_length);
+
+        // clear the buffer before the callback, so it can set a new buffer
+        _output_buffer = decltype(_output_buffer)();
 
         // pass it to the app
-        _app.set_report(hid::report_type::OUTPUT, _output_buffer.subspan(0, report_length));
-    }
-}
+        _app.set_report(type, report);
 
-void device::set_power(bool powered)
-{
-    if (_powered != powered)
-    {
-        _powered = powered;
-        _app.set_power_mode(powered);
-    }
-}
-
-bool device::set_report(hid::report_selector select, const span<const uint8_t> &data)
-{
-    const uint16_t length = *reinterpret_cast<const le_uint16_t*>(data.data());
-
-    // check length validity
-    if (data.size() == length)
-    {
-        _app.set_report(select.type(), data.subspan(sizeof(length)));
         return true;
     }
     else
@@ -343,7 +332,7 @@ bool device::set_command(const span<const uint8_t> &command_data)
                 return false;
             }
 
-            return set_report(cmd.report_selector(), command_data.subspan(cmd_size + sizeof(data_reg)));
+            return set_report(cmd.report_type(), command_data.subspan(cmd_size + sizeof(data_reg)));
 
         case opcodes::SET_IDLE:
             if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) ||
@@ -375,13 +364,13 @@ bool device::set_command(const span<const uint8_t> &command_data)
 
 void device::process_write(size_t data_length)
 {
-    span<uint8_t> data { _buffer.data(), std::min(data_length, _buffer.size()) };
+    span<uint8_t> data { _buffer.data(), data_length };
     uint16_t reg = *reinterpret_cast<const le_uint16_t*>(data.data());
 
     if (reg == registers::OUTPUT_REPORT)
     {
         // output report received
-        set_output_report(data_length);
+        set_report(hid::report_type::OUTPUT, data.subspan(sizeof(reg)));
     }
     else if (reg == registers::COMMAND)
     {

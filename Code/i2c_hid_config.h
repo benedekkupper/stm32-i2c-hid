@@ -16,6 +16,8 @@ extern "C"
 
 void create_i2c_hid_device(void);
 
+void test_i2c_hid_device(void);
+
 #ifdef __cplusplus
 }
 #endif

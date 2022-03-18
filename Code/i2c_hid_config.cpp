@@ -42,3 +42,7 @@ extern "C" void create_i2c_hid_device()
 {
     get_device();
 }
+
+extern "C" __weak void test_i2c_hid_device()
+{
+}

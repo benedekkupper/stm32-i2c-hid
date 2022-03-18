@@ -42,12 +42,17 @@ namespace hid
 
         void button_state_change(bool pressed);
 
+        using keys_report    = reports::keyboard::keys_input_report<report_ids::KEYBOARD>;
+        using kb_leds_report = reports::keyboard::output_report<report_ids::KEYBOARD>;
+        using mouse_report   = reports::mouse::report<report_ids::MOUSE>;
+        using raw_in_report  = reports::opaque::report<32, report_type::INPUT, report_ids::OPAQUE>;
+        using raw_out_report = reports::opaque::report<32, report_type::INPUT, report_ids::OPAQUE>;
+
     private:
-        hid::reports::keyboard::keys_input_report<report_ids::KEYBOARD> _keys_buffer;
-        reports::keyboard::output_report<report_ids::KEYBOARD> _leds_buffer;
-        reports::mouse::report<report_ids::MOUSE> _mouse_buffer;
-        reports::opaque::report<16, report_type::INPUT, report_ids::OPAQUE> _raw_in_buffer;
-        reports::opaque::report<16, report_type::OUTPUT, report_ids::OPAQUE> _raw_out_buffer;
+        keys_report _keys_buffer;
+        mouse_report _mouse_buffer;
+        raw_in_report _raw_in_buffer;
+        raw_out_report _raw_out_buffer;
 
         constexpr explicit demo_app(const hid::report_protocol &rp)
             : application(rp)
@@ -55,9 +60,7 @@ namespace hid
         }
 
         void start() override;
-        void stop() override
-        {
-        }
+        void stop() override;
         void set_report(report_type type, const span<const uint8_t> &data) override;
         void get_report(report_selector select, const span<uint8_t> &buffer) override;
     };

@@ -27,27 +27,31 @@ demo_app &demo_app::instance()
         // third application: raw data
         usage_extended(custom_page::APPLICATION),
         collection::application(
-            hid::reports::opaque::report_descriptor<decltype(demo_app::_raw_in_buffer)>(custom_page::IN_DATA),
+            hid::reports::opaque::report_descriptor<raw_in_report>(custom_page::IN_DATA),
 
-            hid::reports::opaque::report_descriptor<decltype(demo_app::_raw_out_buffer)>(custom_page::OUT_DATA)
+            hid::reports::opaque::report_descriptor<raw_out_report>(custom_page::OUT_DATA)
         )
     );
     static constexpr hid::report_protocol rp(report_descriptor,
-            sizeof(_raw_in_buffer), sizeof(_raw_out_buffer), 0, report_ids::MAX);
+            sizeof(raw_in_report), sizeof(raw_out_report), 0, report_ids::MAX);
     static demo_app app(rp);
     return app;
 }
 
 void demo_app::start()
 {
-    receive_report(_raw_out_buffer);
+    receive_report(&_raw_out_buffer);
+}
+
+void demo_app::stop()
+{
 }
 
 void demo_app::button_state_change(bool pressed)
 {
     _keys_buffer.set_key_state(page::keyboard_keypad::CAPSLOCK, pressed);
 
-    if (send_report(_keys_buffer) != result::OK)
+    if (send_report(&_keys_buffer) != result::OK)
     {
         // TODO deal with BUSY scenario
     }
@@ -59,9 +63,9 @@ void demo_app::set_report(report_type type, const span<const uint8_t> &data)
     assert(type == report_type::OUTPUT);
 
     // data[0] is the report ID only if report IDs are used
-    if (data[0] == _leds_buffer.id())
+    if (data[0] == kb_leds_report::id())
     {
-        auto *out_report = reinterpret_cast<const decltype(_leds_buffer)*>(data.data());
+        auto *out_report = reinterpret_cast<const kb_leds_report*>(data.data());
 
         // use num_lock and caps_lock flag
         set_led(0, out_report->get_led_state(page::leds::CAPS_LOCK));
@@ -72,22 +76,22 @@ void demo_app::set_report(report_type type, const span<const uint8_t> &data)
         // TODO: deal with custom data
     }
 
-    receive_report(_raw_out_buffer);
+    receive_report(&_raw_out_buffer);
 }
 
 void demo_app::get_report(report_selector select, const span<uint8_t> &buffer)
 {
     if (select == _keys_buffer.selector())
     {
-        send_report(_keys_buffer);
+        send_report(&_keys_buffer);
     }
     else if (select == _mouse_buffer.selector())
     {
-        send_report(_mouse_buffer);
+        send_report(&_mouse_buffer);
     }
     else if (select == _raw_in_buffer.selector())
     {
-        send_report(_raw_in_buffer);
+        send_report(&_raw_in_buffer);
     }
     else
     {

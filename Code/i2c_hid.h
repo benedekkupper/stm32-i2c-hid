@@ -212,9 +212,9 @@ namespace i2c_hid
         void process_stop(i2c::direction dir, size_t data_length);
 
         template<typename T>
-        T* get_buffer()
+        T* get_buffer(size_t offset = 0)
         {
-            return reinterpret_cast<T*>(_buffer.data());
+            return reinterpret_cast<T*>(_buffer.data() + offset);
         }
 
         bool queue_input_report(const span<const uint8_t> &data);
@@ -228,12 +228,18 @@ namespace i2c_hid
         bool get_input();
 
         void set_power(bool powered);
-        bool set_report(hid::report_selector select, const span<const uint8_t> &data);
+        bool set_report(hid::report_type type, const span<const uint8_t> &data);
         bool set_command(const span<const uint8_t> &command_data);
-        void set_output_report(size_t data_length);
         void process_write(size_t data_length);
         void process_input_complete(size_t data_length);
         void process_reply_complete(size_t data_length);
+
+        // non-copyable
+        device(const device&) = delete;
+        device& operator=(const device&) = delete;
+        // non-movable
+        device(const device&&) = delete;
+        device& operator=(const device&&) = delete;
 
     private:
         hid::application &_app;
@@ -244,8 +250,8 @@ namespace i2c_hid
         bool _powered = false;
         hid::report_selector _get_report {};
         span<uint8_t> _output_buffer {};
-        simple_queue<span<const uint8_t>> _in_queue;
-        std::array<uint8_t, 64> _buffer;
+        simple_queue<span<const uint8_t>> _in_queue {};
+        std::array<uint8_t, sizeof(descriptor)> _buffer {};
     };
 }
 

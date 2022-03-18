@@ -64,12 +64,17 @@ void slave::nack()
     __HAL_I2C_GENERATE_NACK(_hi2c);
 }
 
+void slave::send_dummy()
+{
+    HAL_I2C_Slave_Seq_Transmit_IT(_hi2c, (uint8_t*)&_hi2c->ErrorCode, sizeof(_hi2c->ErrorCode), I2C_NEXT_FRAME);
+}
+
 void slave::send(const uint8_t *data, size_t size)
 {
     _first_size = size;
     _second_size = 0;
     _second_data = nullptr;
-    HAL_I2C_Slave_Seq_Transmit_DMA(_hi2c, const_cast<uint8_t *>(data), size, I2C_LAST_FRAME);
+    HAL_I2C_Slave_Seq_Transmit_DMA(_hi2c, const_cast<uint8_t *>(data), size, I2C_NEXT_FRAME);
 }
 
 void slave::send(const uint8_t *data1, size_t size1, const uint8_t *data2, size_t size2)
@@ -98,7 +103,8 @@ void slave::receive(uint8_t *data1, size_t size1, uint8_t *data2, size_t size2)
 
 void slave::handle_start(direction dir)
 {
-    if (_module != nullptr)
+    bool success = _module != nullptr;
+    if (success)
     {
         _last_dir = dir;
         size_t size = _first_size;
@@ -117,18 +123,18 @@ void slave::handle_start(direction dir)
                 size -= __HAL_DMA_GET_COUNTER(_hi2c->hdmarx);
             }
         }
-        bool success = _on_start(_module, dir, size);
-        if (!success)
+        success = _on_start(_module, dir, size);
+    }
+    if (!success)
+    {
+        // impossible to NACK in read direction
+        if (dir == direction::WRITE)
         {
-            // impossible to NACK in read direction
-            if (dir == direction::WRITE)
-            {
-                nack();
-            }
-            else
-            {
-                // TODO: send dummy bytes
-            }
+            nack();
+        }
+        else
+        {
+            send_dummy();
         }
     }
 }
@@ -139,11 +145,11 @@ void slave::handle_tx_complete()
     {
         auto *data = _second_data;
         _second_data = nullptr;
-        HAL_I2C_Slave_Seq_Transmit_DMA(_hi2c, data, _second_size, I2C_LAST_FRAME);
+        HAL_I2C_Slave_Seq_Transmit_DMA(_hi2c, data, _second_size, I2C_NEXT_FRAME);
     }
     else
     {
-        // TODO: send dummy bytes
+        send_dummy();
     }
 }
 

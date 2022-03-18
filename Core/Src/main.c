@@ -96,6 +96,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   create_i2c_hid_device();
+
+  test_i2c_hid_device();
   /* USER CODE END 2 */
 
   /* Infinite loop */

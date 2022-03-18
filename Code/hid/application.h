@@ -66,10 +66,10 @@ namespace hid
 
     enum class result : error_t
     {
-        OK = 0,
-        INVALID = -EINVAL,
-        NO_TRANSPORT = -ENODEV,
-        BUSY = -EBUSY,
+        OK            = 0,
+        INVALID       = -EINVAL,
+        NO_TRANSPORT  = -ENODEV,
+        BUSY          = -EBUSY,
     };
 
     class application
@@ -84,6 +84,63 @@ namespace hid
         {
             return _report_protocol;
         }
+
+    private:
+        /// \brief Initialize the application when the transport becomes active.
+        virtual void start()
+        {
+        }
+
+        /// \brief Stop and clean up the application when the transport is shut down.
+        virtual void stop()
+        {
+        }
+
+    public:
+        /// \brief Called by the transport when a report is received from the host.
+        ///        The report data is always loaded into the buffer provided by \ref receive_report call.
+        /// \param type: received report's type (either OUTPUT or FEATURE)
+        /// \param data: received report data
+        virtual void set_report(report_type type, const span<const uint8_t> &data) = 0;
+
+        /// \brief Called by the transport when a synchronous report reading is requested
+        ///        by the host. Use \ref send_report to provide the requested report data.
+        /// \param select: identifies the requested report (either INPUT or FEATURE)
+        /// \param buffer: optional buffer space that is available for the report sending
+        virtual void get_report(report_selector select, const span<uint8_t> &buffer) = 0;
+
+        /// \brief Called by the transport when the host has received the INPUT report
+        ///        that was provided through a successfull call of \ref send_report
+        /// \param data: the report data that was sent
+        virtual void in_report_sent(const span<const uint8_t> &data)
+        {
+        }
+
+        virtual void set_power_mode(bool enabled)
+        {
+        }
+
+        // only for 101 keyboards and mice that want to support BIOS, etc
+        virtual protocol get_protocol() const
+        {
+            return protocol::REPORT;
+        }
+
+        virtual bool set_protocol(protocol new_protocol)
+        {
+#if 0
+            return false;
+#else
+            return new_protocol == protocol::REPORT;
+#endif
+        }
+
+        // SPEC WTF: The IDLE parameter is meant to control how often the device should resend
+        // the same piece of information. This is introduced in the USB HID class spec,
+        // somehow thinking that the host cannot keep track of the time by itself -
+        // but then how does the host generate the Start of Frame with correct intervals?
+        uint32_t get_idle(uint8_t report_id = 0) { return 0; }
+        bool     set_idle(uint32_t idle_repeat_ms, uint8_t report_id = 0) { return false; }
 
         bool is_transport_valid() const
         {
@@ -116,91 +173,70 @@ namespace hid
             }
         }
 
-        virtual void set_report(report_type type, const span<const uint8_t> &data) = 0;
-
-        // use send_report() to provide the requested report data
-        virtual void get_report(report_selector select, const span<uint8_t> &buffer) = 0;
-
-        virtual void in_report_sent(const span<const uint8_t> &data)
-        {
-        }
-
-        // only for 101 keyboards and mice that want to support BIOS, etc
-        virtual protocol get_protocol() const
-        {
-            return protocol::REPORT;
-        }
-
-        virtual bool set_protocol(protocol new_protocol)
-        {
-#if 1
-            return false;
-#else
-            return new_protocol == protocol::REPORT;
-#endif
-        }
-
-        // the whole idle concept is stupid, reject it here without hurting too many feelings
-        uint32_t get_idle(uint8_t report_id = 0)
-        {
-            return 0;
-        }
-        bool set_idle(uint32_t idle_repeat_ms, uint8_t report_id = 0)
-        {
-            return false;
-        }
-
-        virtual void set_power_mode(bool enabled)
-        {
-        }
-
     protected:
-        template <typename T>
-        result send_report(const T &buffer, report_type type = report_type::INPUT)
+        /// \brief Send a report to the host.
+        /// \param data: the report data to send
+        /// \param type: either INPUT, or FEATURE (the latter only from \ref get_report call context)
+        /// \return OK           if transmission is scheduled,
+        ///         BUSY         if transport is busy with another report,
+        ///         NO_TRANSPORT if transport is missing;
+        ///         INVALID      if the buffer size is 0 or FEATURE report is provided from wrong context
+        result send_report(const span<const uint8_t> &data, report_type type = report_type::INPUT)
         {
-            if (buffer.size() == 0)
+            if (data.size() == 0)
             {
                 return result::INVALID;
             }
             else if (is_transport_valid())
             {
-                return _send_report(_transport, span<const uint8_t>(buffer.data(), buffer.size()), type);
+                return _send_report(_transport, data, type);
             }
             else
             {
                 return result::NO_TRANSPORT;
             }
         }
-
+        /// \brief Send a \ref hid::report type structure to the host.
+        /// \tparam T: a \ref hid::report type
+        /// \param report: the report data to send
+        /// \return see \ref send_report above
         template <typename T>
-        result receive_report(T &buffer)
+        inline result send_report(const T *report)
         {
-            if (buffer.size() == 0)
+            return send_report(span<const uint8_t>(report->data(), sizeof(*report)), report->type());
+        }
+
+        /// \brief Request receiving the next OUT or FEATURE report into the provided buffer.
+        /// \param data: The allocated buffer for receiving reports.
+        /// \return OK           if transport is available
+        ///         NO_TRANSPORT if transport is missing
+        ///         INVALID      if the buffer size is 0
+        result receive_report(const span<uint8_t> &data)
+        {
+            if (data.size() == 0)
             {
                 return result::INVALID;
             }
             else if (is_transport_valid())
             {
-                return _receive_report(_transport, span<uint8_t>(buffer.data(), buffer.size()));
+                return _receive_report(_transport, data);
             }
             else
             {
                 return result::NO_TRANSPORT;
             }
+        }
+        template <typename T>
+        inline result receive_report(T *report)
+        {
+            return receive_report(span<uint8_t>(report->data(), sizeof(*report)));
         }
 
     private:
         const hid::report_protocol &_report_protocol;
         void *_transport = nullptr;
-        result (*_send_report)(void *transport, const span<const uint8_t> &data, report_type type) = nullptr;
+        result (*_send_report)   (void *transport, const span<const uint8_t> &data, report_type type) = nullptr;
         result (*_receive_report)(void *transport, const span<uint8_t> &data) = nullptr;
-
-        virtual void start()
-        {
-        }
-        virtual void stop()
-        {
-        }
     };
 }
 

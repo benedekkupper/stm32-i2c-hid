@@ -147,11 +147,19 @@ namespace i2c
         void start_listen();
         void stop_listen();
         void nack();
+        void send_dummy();
 
         void send(const uint8_t *data, size_t size);
         void send(const uint8_t *data1, size_t size1, const uint8_t *data2, size_t size2);
         void receive(uint8_t *data, size_t size);
         void receive(uint8_t *data1, size_t size1, uint8_t *data2, size_t size2);
+
+        // non-copyable
+        slave(const slave&) = delete;
+        slave& operator=(const slave&) = delete;
+        // non-movable
+        slave(const slave&&) = delete;
+        slave& operator=(const slave&&) = delete;
 
     private:
         void *_module = nullptr;
