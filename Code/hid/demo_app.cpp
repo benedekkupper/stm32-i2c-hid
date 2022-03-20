@@ -9,7 +9,8 @@
 ///         https://mozilla.org/MPL/2.0/.
 ///
 #include "hid/demo_app.h"
-#include "main.h"
+
+extern void set_led(bool on);
 
 using namespace hid;
 
@@ -68,8 +69,7 @@ void demo_app::set_report(report_type type, const span<const uint8_t> &data)
         auto *out_report = reinterpret_cast<const kb_leds_report*>(data.data());
 
         // use num_lock and caps_lock flag
-        set_led(0, out_report->get_led_state(page::leds::CAPS_LOCK));
-        set_led(1, out_report->get_led_state(page::leds::NUM_LOCK));
+        set_led(out_report->get_led_state(page::leds::CAPS_LOCK));
     }
     else // if (data[0] == _raw_out_buffer.id())
     {
@@ -97,11 +97,4 @@ void demo_app::get_report(report_selector select, const span<uint8_t> &buffer)
     {
         assert(false);
     }
-}
-
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    bool pressed = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
-
-    demo_app::instance().button_state_change(pressed);
 }

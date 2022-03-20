@@ -46,3 +46,18 @@ extern "C" void create_i2c_hid_device()
 extern "C" __weak void test_i2c_hid_device()
 {
 }
+
+void set_led(bool value)
+{
+    HAL_GPIO_WritePin(GPIOC, LD3_Pin, (GPIO_PinState)(value));
+}
+
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == B1_Pin)
+    {
+        bool pressed = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
+
+        hid::demo_app::instance().button_state_change(pressed);
+    }
+}
