@@ -47,7 +47,7 @@ void device::link_reset()
 
 hid::result device::receive_report(const span<uint8_t> &data)
 {
-    if ((_output_buffer.size() == 0) || (_stage == 0))
+    if ((_output_buffer.size() == 0) or (_stage == 0))
     {
         // save the target buffer for when the transfer is made
         _output_buffer = data;
@@ -64,7 +64,7 @@ hid::result device::send_report(const span<const uint8_t> &data, hid::report_typ
 {
     // if the function is invoked in the GET_REPORT callback context,
     // and the report type and ID matches, transmit immediately (without interrupt)
-    if ((_get_report.type() == type) && ((_get_report.id() == 0) || (_get_report.id() == data.front())))
+    if ((_get_report.type() == type) and ((_get_report.id() == 0) or (_get_report.id() == data.front())))
     {
         auto &report_length = *get_buffer<le_uint16_t>();
         report_length = static_cast<uint16_t>(data.size());
@@ -107,7 +107,7 @@ bool device::get_command(const span<const uint8_t> &command_data)
     auto cmd_size = cmd.size();
     uint16_t data_reg = *reinterpret_cast<const le_uint16_t*>(command_data.data() + cmd_size);
 
-    if ((command_data.size() != (cmd_size + sizeof(data_reg))) || (data_reg != registers::DATA))
+    if ((command_data.size() != (cmd_size + sizeof(data_reg))) or (data_reg != registers::DATA))
     {
         // invalid size or register
         return false;
@@ -171,7 +171,7 @@ bool device::reply_request(size_t data_length)
             return false;
         }
     }
-    else if ((data.size() > sizeof(reg)) && (reg == registers::COMMAND))
+    else if ((data.size() > sizeof(reg)) and (reg == registers::COMMAND))
     {
         return get_command(data.subspan(sizeof(reg)));
     }
@@ -192,7 +192,7 @@ bool device::get_input()
 {
     // send the next report from the queue
     span<const uint8_t> input_data;
-    if (_in_queue.front(input_data) && (input_data.size() > 0))
+    if (_in_queue.front(input_data) and (input_data.size() > 0))
     {
         auto &report_length = *reinterpret_cast<le_uint16_t*>(_buffer.data());
         report_length = static_cast<uint16_t>(input_data.size());
@@ -261,7 +261,7 @@ bool device::set_report(hid::report_type type, const span<const uint8_t> &data)
     size_t report_length = length - sizeof(length);
 
     // check length validity
-    if ((data.size() == length) && (report_length <= _output_buffer.size()))
+    if ((data.size() == length) and (report_length <= _output_buffer.size()))
     {
         // copy/move the output report into the requested buffer
         size_t header_size = (data.data() - _buffer.data()) + sizeof(length);
@@ -325,7 +325,7 @@ bool device::set_command(const span<const uint8_t> &command_data)
             return true;
 
         case opcodes::SET_REPORT:
-            if ((command_data.size() <= (cmd_size + sizeof(data_reg))) ||
+            if ((command_data.size() <= (cmd_size + sizeof(data_reg))) or
                 (data_reg != registers::DATA))
             {
                 // invalid size or register
@@ -335,8 +335,8 @@ bool device::set_command(const span<const uint8_t> &command_data)
             return set_report(cmd.report_type(), command_data.subspan(cmd_size + sizeof(data_reg)));
 
         case opcodes::SET_IDLE:
-            if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) ||
-                (data_reg != registers::DATA) ||
+            if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) or
+                (data_reg != registers::DATA) or
                 (u16_data.length != sizeof(short_data)))
             {
                 // invalid size or register
@@ -347,8 +347,8 @@ bool device::set_command(const span<const uint8_t> &command_data)
 
         case opcodes::SET_PROTOCOL:
             // SPEC WTF: why isn't the 8-bit protocol value in the command_data.data instead of in the data register?
-            if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) ||
-                (data_reg != registers::DATA) ||
+            if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) or
+                (data_reg != registers::DATA) or
                 (u16_data.length != sizeof(short_data)))
             {
                 // invalid size or register
@@ -388,7 +388,7 @@ void device::process_input_complete(size_t data_length)
     span<const uint8_t> input_data;
 
     // verify sent length
-    if (_in_queue.front(input_data) && ((REPORT_LENGTH_SIZE + input_data.size()) <= data_length))
+    if (_in_queue.front(input_data) and ((REPORT_LENGTH_SIZE + input_data.size()) <= data_length))
     {
         // input report transmit complete, remove from queue
         _in_queue.pop();
