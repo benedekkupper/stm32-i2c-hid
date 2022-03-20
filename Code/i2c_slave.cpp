@@ -81,7 +81,7 @@ void slave::send(const uint8_t *data1, size_t size1, const uint8_t *data2, size_
 {
     _first_size = size1;
     _second_size = size2;
-    _second_data = const_cast<uint8_t*>(data2);
+    _second_data = (_second_size > 0) ? const_cast<uint8_t*>(data2) : nullptr;
     HAL_I2C_Slave_Seq_Transmit_DMA(_hi2c, const_cast<uint8_t*>(data1), size1, I2C_NEXT_FRAME);
 }
 
@@ -97,7 +97,7 @@ void slave::receive(uint8_t *data1, size_t size1, uint8_t *data2, size_t size2)
 {
     _first_size = size1;
     _second_size = size2;
-    _second_data = const_cast<uint8_t*>(data2);
+    _second_data = (_second_size > 0) ? const_cast<uint8_t*>(data2) : nullptr;
     HAL_I2C_Slave_Seq_Receive_DMA(_hi2c, data1, size1, I2C_NEXT_FRAME);
 }
 
