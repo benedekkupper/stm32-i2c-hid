@@ -87,6 +87,7 @@ namespace hid
 
     private:
         /// \brief Initialize the application when the transport becomes active.
+        ///        The application must always start in REPORT protocol (as opposed to BOOT) mode.
         virtual void start()
         {
         }
@@ -110,22 +111,101 @@ namespace hid
         virtual void get_report(report_selector select, const span<uint8_t> &buffer) = 0;
 
         /// \brief Called by the transport when the host has received the INPUT report
-        ///        that was provided through a successfull call of \ref send_report
+        ///        that was provided through a successful call of \ref send_report,
+        ///        outside of \ref get_report context.
         /// \param data: the report data that was sent
         virtual void in_report_sent(const span<const uint8_t> &data)
         {
         }
 
+        /// \brief Called by the transport when the host changes the power level of the link.
+        /// \note  This may happen outside of the operating time of the application
+        ///        (which is between \ref start and \ref stop)
+        /// \param enabled: whether the link is set to powered
         virtual void set_power_mode(bool enabled)
         {
         }
 
-        // only for 101 keyboards and mice that want to support BIOS, etc
+    protected:
+        /// \brief  Send a report to the host.
+        /// \param  data: the report data to send
+        /// \param  type: either INPUT, or FEATURE (the latter only from \ref get_report call context)
+        /// \return OK           if transmission is scheduled,
+        ///         BUSY         if transport is busy with another report,
+        ///         NO_TRANSPORT if transport is missing;
+        ///         INVALID      if the buffer size is 0 or FEATURE report is provided from wrong context
+        result send_report(const span<const uint8_t> &data, report_type type = report_type::INPUT)
+        {
+            if (data.size() == 0)
+            {
+                return result::INVALID;
+            }
+            else if (is_transport_valid())
+            {
+                return _send_report(_transport, data, type);
+            }
+            else
+            {
+                return result::NO_TRANSPORT;
+            }
+        }
+
+        /// \brief  Send a \ref hid::report type structure to the host.
+        /// \tparam T: a \ref hid::report type
+        /// \param  report: the report data to send
+        /// \return see \ref send_report above
+        template <typename T>
+        inline result send_report(const T *report)
+        {
+            return send_report(span<const uint8_t>(report->data(), sizeof(*report)), report->type());
+        }
+
+        /// \brief  Request receiving the next OUT or FEATURE report into the provided buffer.
+        /// \param  data: The allocated buffer for receiving reports.
+        /// \return OK           if transport is available
+        ///         NO_TRANSPORT if transport is missing
+        ///         INVALID      if the buffer size is 0
+        result receive_report(const span<uint8_t> &data)
+        {
+            if (data.size() == 0)
+            {
+                return result::INVALID;
+            }
+            else if (is_transport_valid())
+            {
+                return _receive_report(_transport, data);
+            }
+            else
+            {
+                return result::NO_TRANSPORT;
+            }
+        }
+
+        /// \brief  Request receiving the next OUT or FEATURE report into the provided
+        ///         \ref hid::report type buffer.
+        /// \tparam T: a \ref hid::report type
+        /// \param  report: the report buffer to receive into
+        /// \return see \ref receive_report above
+        template <typename T>
+        inline result receive_report(T *report)
+        {
+            return receive_report(span<uint8_t>(report->data(), sizeof(*report)));
+        }
+
+    public:
+        /// \brief  Indicates the currently selected protocol.
+        /// \return The current protocol, either REPORT (default) or BOOT.
         virtual protocol get_protocol() const
         {
             return protocol::REPORT;
         }
 
+        /// \brief Called by the transport when the host wants to switch between default REPORT
+        ///        and simplified BOOT protocol. BOOT protocol is only defined for USB
+        ///        101 keyboard and mouse applications, and the support of BOOT protocol
+        ///        is indicated by the USB HID interface descriptor.
+        /// \param new_protocol: the new protocol to continue operating with
+        /// \return true if successful, false otherwise
         virtual bool set_protocol(protocol new_protocol)
         {
 #if 0
@@ -148,88 +228,37 @@ namespace hid
         }
 
         template<class T>
-        void setup(T *tp, result(T::*sender)(const span<const uint8_t> &data, report_type type),
+        bool setup(T *tp, result(T::*sender)(const span<const uint8_t> &data, report_type type),
                 result(T::*receiver)(const span<uint8_t> &data))
         {
-            if (is_transport_valid())
+            if (teardown(tp) || !is_transport_valid())
             {
-                stop();
-                _transport = nullptr;
-            }
-            _send_report    = reinterpret_cast<decltype(_send_report)>(sender);
-            _receive_report = reinterpret_cast<decltype(_receive_report)>(receiver);
-            _transport      = reinterpret_cast<decltype(_transport)>(tp);
+                _send_report    = reinterpret_cast<decltype(_send_report)>(sender);
+                _receive_report = reinterpret_cast<decltype(_receive_report)>(receiver);
+                _transport      = reinterpret_cast<decltype(_transport)>(tp);
 
-            start();
+                start();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         template<class T>
-        void teardown(T *tp)
+        bool teardown(T *tp)
         {
             if (reinterpret_cast<decltype(_transport)>(tp) == _transport)
             {
                 stop();
                 _transport = nullptr;
-            }
-        }
-
-    protected:
-        /// \brief Send a report to the host.
-        /// \param data: the report data to send
-        /// \param type: either INPUT, or FEATURE (the latter only from \ref get_report call context)
-        /// \return OK           if transmission is scheduled,
-        ///         BUSY         if transport is busy with another report,
-        ///         NO_TRANSPORT if transport is missing;
-        ///         INVALID      if the buffer size is 0 or FEATURE report is provided from wrong context
-        result send_report(const span<const uint8_t> &data, report_type type = report_type::INPUT)
-        {
-            if (data.size() == 0)
-            {
-                return result::INVALID;
-            }
-            else if (is_transport_valid())
-            {
-                return _send_report(_transport, data, type);
+                return true;
             }
             else
             {
-                return result::NO_TRANSPORT;
+                return false;
             }
-        }
-        /// \brief Send a \ref hid::report type structure to the host.
-        /// \tparam T: a \ref hid::report type
-        /// \param report: the report data to send
-        /// \return see \ref send_report above
-        template <typename T>
-        inline result send_report(const T *report)
-        {
-            return send_report(span<const uint8_t>(report->data(), sizeof(*report)), report->type());
-        }
-
-        /// \brief Request receiving the next OUT or FEATURE report into the provided buffer.
-        /// \param data: The allocated buffer for receiving reports.
-        /// \return OK           if transport is available
-        ///         NO_TRANSPORT if transport is missing
-        ///         INVALID      if the buffer size is 0
-        result receive_report(const span<uint8_t> &data)
-        {
-            if (data.size() == 0)
-            {
-                return result::INVALID;
-            }
-            else if (is_transport_valid())
-            {
-                return _receive_report(_transport, data);
-            }
-            else
-            {
-                return result::NO_TRANSPORT;
-            }
-        }
-        template <typename T>
-        inline result receive_report(T *report)
-        {
-            return receive_report(span<uint8_t>(report->data(), sizeof(*report)));
         }
 
     private:
