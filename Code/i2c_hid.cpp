@@ -27,10 +27,10 @@ device::~device()
     // disable I2C
     i2c::slave::instance().unregister_module(this);
 
-    // Clear context
+    // clear context
     _get_report.clear();
     _in_queue.clear();
-    _stage = 0;
+    _output_buffer = decltype(_output_buffer)();
 }
 
 void device::link_reset()
@@ -38,8 +38,10 @@ void device::link_reset()
     // reset application
     _app.teardown(this);
 
-    // flush input queue
+    // clear context
+    _get_report.clear();
     _in_queue.clear();
+    _output_buffer = decltype(_output_buffer)();
 
     // send 0 length input report
     queue_input_report(span<const uint8_t>());
