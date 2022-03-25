@@ -42,7 +42,7 @@ namespace hid
         uint16_t product_id;
         version  product_version;
 
-        product_info(uint16_t vendor_id, uint16_t product_id, version product_version)
+        constexpr product_info(uint16_t vendor_id, uint16_t product_id, version product_version)
             : vendor_id(vendor_id), product_id(product_id), product_version(product_version)
         {
         }

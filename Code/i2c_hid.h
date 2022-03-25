@@ -47,17 +47,17 @@ namespace i2c_hid
         le_uint16_t wVersionID = 0;
         le_uint32_t reserved = 0;
 
-        descriptor()
+        constexpr descriptor()
         {
         }
 
-        descriptor& reset()
+        constexpr descriptor& reset()
         {
             *this = descriptor();
             return *this;
         }
 
-        descriptor& set_protocol(const hid::report_protocol &rep_prot)
+        constexpr descriptor& set_protocol(const hid::report_protocol &rep_prot)
         {
             wReportDescLength   = rep_prot.descriptor.size();
             wMaxInputLength     = sizeof(le_uint16_t) + rep_prot.max_input_size;
@@ -65,7 +65,7 @@ namespace i2c_hid
             return *this;
         }
 
-        descriptor& set_product_info(const hid::product_info &pinfo)
+        constexpr descriptor& set_product_info(const hid::product_info &pinfo)
         {
             wVendorID           = pinfo.vendor_id;
             wProductID          = pinfo.product_id;
@@ -74,7 +74,7 @@ namespace i2c_hid
         }
 
         template<typename T>
-        descriptor& set_registers()
+        constexpr descriptor& set_registers()
         {
             wReportDescRegister = static_cast<uint16_t>(T::REPORT_DESCRIPTOR);
             wInputRegister      = static_cast<uint16_t>(T::INPUT_REPORT);
