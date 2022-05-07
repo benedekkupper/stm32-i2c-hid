@@ -9,12 +9,7 @@
 ///         https://mozilla.org/MPL/2.0/.
 ///
 #include "i2c_slave.h"
-#include "main.h"
-
-extern I2C_HandleTypeDef *const i2c_slave_handle;
-extern GPIO_TypeDef *const interrupt_out_port;
-extern uint16_t const interrupt_out_pin;
-extern void (*const i2c_slave_init_fn)(void);
+#include "i2c_slave_config.h"
 
 using namespace i2c;
 
