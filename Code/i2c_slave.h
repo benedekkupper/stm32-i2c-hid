@@ -14,8 +14,6 @@
 #include <cstddef>
 #include <cstdint>
 
-struct __I2C_HandleTypeDef;
-
 namespace i2c
 {
     enum class direction : uint8_t
@@ -142,7 +140,7 @@ namespace i2c
         void handle_stop();
 
     private:
-        slave(__I2C_HandleTypeDef *hi2cx, void (*MX_Init)(), void *gpioport, uint16_t gpiopin);
+        slave();
         void set_slave_address(address slave_addr);
         void start_listen();
         void stop_listen();
@@ -165,9 +163,6 @@ namespace i2c
         void *_module = nullptr;
         bool(*_on_start)(void *module, direction dir, size_t data_length) = nullptr;
         void(*_on_stop)(void *module, direction dir, size_t data_length) = nullptr;
-        __I2C_HandleTypeDef *const _hi2c;
-        void *const _pinport;
-        const uint16_t _pin;
         size_t _first_size;
         size_t _second_size;
         uint8_t *_second_data;

@@ -5,12 +5,11 @@
 
 extern I2C_HandleTypeDef hi2c2;
 
-i2c::slave &i2c::slave::instance()
-{
-    // configuration of MCU HW:
-    static slave s {&hi2c2, MX_I2C2_Init, EXT_RESET_GPIO_Port, EXT_RESET_Pin};
-    return s;
-}
+// configuration of MCU HW:
+extern I2C_HandleTypeDef *const i2c_slave_handle = &hi2c2;
+extern GPIO_TypeDef *const interrupt_out_port = EXT_RESET_GPIO_Port;
+extern uint16_t const interrupt_out_pin = EXT_RESET_Pin;
+extern void (*const i2c_slave_init_fn)(void) = &MX_I2C2_Init;
 
 i2c_hid::device& get_device()
 {
