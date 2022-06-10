@@ -14,6 +14,7 @@
 #include <cerrno>
 #include "base_types.h"
 #include "hid/report.h"
+#include "hid/report_protocol.h"
 #include "hid/rdf/descriptor_view.h"
 
 namespace hid
@@ -44,22 +45,6 @@ namespace hid
 
         constexpr product_info(uint16_t vendor_id, uint16_t product_id, version product_version)
             : vendor_id(vendor_id), product_id(product_id), product_version(product_version)
-        {
-        }
-    };
-
-    struct report_protocol
-    {
-        rdf::ce_descriptor_view descriptor;
-        size_t max_input_size = 0;
-        size_t max_output_size = 0;
-        size_t max_feature_size = 0;
-        uint8_t max_report_id = 0;
-
-        constexpr report_protocol(const rdf::descriptor_view &descriptor, size_t max_input_size,
-                size_t max_output_size = 0, size_t max_feature_size = 0, uint8_t max_report_id = 0)
-            : descriptor(descriptor), max_input_size(max_input_size)
-            , max_output_size(max_output_size), max_feature_size(max_feature_size), max_report_id(max_report_id)
         {
         }
     };

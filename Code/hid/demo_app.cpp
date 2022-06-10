@@ -18,7 +18,7 @@ demo_app &demo_app::instance()
 {
     using namespace hid::rdf;
 
-    static constexpr auto report_descriptor = (
+    static constexpr auto report_descriptor = descriptor(
         // first application: standard keyboard
         hid::reports::keyboard::app_report_descriptor<report_ids::KEYBOARD>(),
 
@@ -33,8 +33,13 @@ demo_app &demo_app::instance()
             hid::reports::opaque::report_descriptor<raw_out_report>(custom_page::OUT_DATA)
         )
     );
-    static constexpr hid::report_protocol rp(report_descriptor,
-            sizeof(raw_in_report), sizeof(raw_out_report), 0, report_ids::MAX);
+    static constexpr hid::report_protocol rp(report_descriptor);
+
+    static_assert(rp.max_input_size == sizeof(raw_in_report));
+    static_assert(rp.max_output_size == sizeof(raw_out_report));
+    static_assert(rp.max_feature_size == 0);
+    static_assert(rp.max_report_id == report_ids::MAX);
+
     static demo_app app(rp);
     return app;
 }

@@ -18,6 +18,24 @@
 
 namespace hid
 {
+    namespace page
+    {
+        enum class custom_page : usage_id_type;
+        template <>
+        struct info<custom_page>
+        {
+            constexpr static usage_id_type base_id = 0xff010000;
+            constexpr static usage_id_type max_usage = 3 | base_id;
+            constexpr static const char* name = "invalid";
+        };
+        enum class custom_page : hid::usage_id_type
+        {
+            APPLICATION = 0x0001 | info<custom_page>::base_id,
+            IN_DATA = 0x0002 | info<custom_page>::base_id,
+            OUT_DATA = 0x0003 | info<custom_page>::base_id,
+        };
+    }
+
     class demo_app : public hid::application
     {
         enum report_ids : uint8_t
@@ -26,15 +44,6 @@ namespace hid
             MOUSE = 2,
             OPAQUE = 3,
             MAX = OPAQUE
-        };
-
-        enum class custom_page : hid::usage_id_type
-        {
-            PAGE_ID = 0xff010000,
-            APPLICATION = 0x0001 | static_cast<usage_id_type>(PAGE_ID),
-            IN_DATA = 0x0002 | static_cast<usage_id_type>(PAGE_ID),
-            OUT_DATA = 0x0002 | static_cast<usage_id_type>(PAGE_ID),
-            MAX_USAGE = 0x0003 | static_cast<usage_id_type>(PAGE_ID),
         };
 
     public:
@@ -46,7 +55,7 @@ namespace hid
         using kb_leds_report = reports::keyboard::output_report<report_ids::KEYBOARD>;
         using mouse_report   = reports::mouse::report<report_ids::MOUSE>;
         using raw_in_report  = reports::opaque::report<32, report_type::INPUT, report_ids::OPAQUE>;
-        using raw_out_report = reports::opaque::report<32, report_type::INPUT, report_ids::OPAQUE>;
+        using raw_out_report = reports::opaque::report<32, report_type::OUTPUT, report_ids::OPAQUE>;
 
     private:
         keys_report _keys_buffer;
