@@ -60,12 +60,12 @@ namespace hid
     class application
     {
     public:
-        constexpr explicit application(const hid::report_protocol &rp)
+        constexpr explicit application(const hid::report_protocol& rp)
             : _report_protocol(rp)
         {
         }
 
-        constexpr const hid::report_protocol &report_protocol() const
+        constexpr const hid::report_protocol& report_protocol() const
         {
             return _report_protocol;
         }
@@ -87,19 +87,19 @@ namespace hid
         ///        The report data is always loaded into the buffer provided by \ref receive_report call.
         /// \param type: received report's type (either OUTPUT or FEATURE)
         /// \param data: received report data
-        virtual void set_report(report_type type, const span<const uint8_t> &data) = 0;
+        virtual void set_report(report_type type, const span<const uint8_t>& data) = 0;
 
         /// \brief Called by the transport when a synchronous report reading is requested
         ///        by the host. Use \ref send_report to provide the requested report data.
         /// \param select: identifies the requested report (either INPUT or FEATURE)
         /// \param buffer: optional buffer space that is available for the report sending
-        virtual void get_report(report_selector select, const span<uint8_t> &buffer) = 0;
+        virtual void get_report(report_selector select, const span<uint8_t>& buffer) = 0;
 
         /// \brief Called by the transport when the host has received the INPUT report
         ///        that was provided through a successful call of \ref send_report,
         ///        outside of \ref get_report context.
         /// \param data: the report data that was sent
-        virtual void in_report_sent(const span<const uint8_t> &data)
+        virtual void in_report_sent(const span<const uint8_t>& data)
         {
         }
 
@@ -119,7 +119,7 @@ namespace hid
         ///         BUSY         if transport is busy with another report,
         ///         NO_TRANSPORT if transport is missing;
         ///         INVALID      if the buffer size is 0 or FEATURE report is provided from wrong context
-        result send_report(const span<const uint8_t> &data, report_type type = report_type::INPUT)
+        result send_report(const span<const uint8_t>& data, report_type type = report_type::INPUT)
         {
             if (data.size() == 0)
             {
@@ -140,7 +140,7 @@ namespace hid
         /// \param  report: the report data to send
         /// \return see \ref send_report above
         template <typename T>
-        inline result send_report(const T *report)
+        inline result send_report(const T* report)
         {
             return send_report(span<const uint8_t>(report->data(), sizeof(*report)), report->type());
         }
@@ -150,7 +150,7 @@ namespace hid
         /// \return OK           if transport is available
         ///         NO_TRANSPORT if transport is missing
         ///         INVALID      if the buffer size is 0
-        result receive_report(const span<uint8_t> &data)
+        result receive_report(const span<uint8_t>& data)
         {
             if (data.size() == 0)
             {
@@ -172,7 +172,7 @@ namespace hid
         /// \param  report: the report buffer to receive into
         /// \return see \ref receive_report above
         template <typename T>
-        inline result receive_report(T *report)
+        inline result receive_report(T* report)
         {
             return receive_report(span<uint8_t>(report->data(), sizeof(*report)));
         }
@@ -213,10 +213,10 @@ namespace hid
         }
 
         template<class T>
-        bool setup(T *tp, result(T::*sender)(const span<const uint8_t> &data, report_type type),
-                result(T::*receiver)(const span<uint8_t> &data))
+        bool setup(T* tp, result(T::*sender)(const span<const uint8_t>& data, report_type type),
+                result(T::*receiver)(const span<uint8_t>& data))
         {
-            if (teardown(tp) || !is_transport_valid())
+            if (teardown(tp) or !is_transport_valid())
             {
                 _send_report    = reinterpret_cast<decltype(_send_report)>(sender);
                 _receive_report = reinterpret_cast<decltype(_receive_report)>(receiver);
@@ -232,7 +232,7 @@ namespace hid
         }
 
         template<class T>
-        bool teardown(T *tp)
+        bool teardown(T* tp)
         {
             if (reinterpret_cast<decltype(_transport)>(tp) == _transport)
             {
@@ -247,10 +247,10 @@ namespace hid
         }
 
     private:
-        const hid::report_protocol &_report_protocol;
-        void *_transport = nullptr;
-        result (*_send_report)   (void *transport, const span<const uint8_t> &data, report_type type) = nullptr;
-        result (*_receive_report)(void *transport, const span<uint8_t> &data) = nullptr;
+        const hid::report_protocol& _report_protocol;
+        void* _transport = nullptr;
+        result (*_send_report)   (void* transport, const span<const uint8_t>& data, report_type type) = nullptr;
+        result (*_receive_report)(void* transport, const span<uint8_t>& data) = nullptr;
     };
 }
 

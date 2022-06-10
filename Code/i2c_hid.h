@@ -19,7 +19,7 @@ template <typename T>
 constexpr T pack_str(const char* str)
 {
     T val = 0;
-    for (unsigned i = 0; (i < sizeof(T)) && (str[i] != '\0'); i++)
+    for (unsigned i = 0; (i < sizeof(T)) and (str[i] != '\0'); i++)
     {
         val = (val) | static_cast<T>(str[i]) << (i * 8);
     }
@@ -57,7 +57,7 @@ namespace i2c_hid
             return *this;
         }
 
-        constexpr descriptor& set_protocol(const hid::report_protocol &rep_prot)
+        constexpr descriptor& set_protocol(const hid::report_protocol& rep_prot)
         {
             wReportDescLength   = rep_prot.descriptor.size();
             wMaxInputLength     = sizeof(le_uint16_t) + rep_prot.max_input_size;
@@ -65,7 +65,7 @@ namespace i2c_hid
             return *this;
         }
 
-        constexpr descriptor& set_product_info(const hid::product_info &pinfo)
+        constexpr descriptor& set_product_info(const hid::product_info& pinfo)
         {
             wVendorID           = pinfo.vendor_id;
             wProductID          = pinfo.product_id;
@@ -130,7 +130,7 @@ namespace i2c_hid
         }
         constexpr bool is_extended() const
         {
-            return (opcode() >= opcodes::GET_REPORT) && (opcode() <= opcodes::SET_IDLE) && ((_buffer[0] & 0xf) == 0xf);
+            return (opcode() >= opcodes::GET_REPORT) and (opcode() <= opcodes::SET_IDLE) and ((_buffer[0] & 0xf) == 0xf);
         }
         constexpr size_t size() const
         {
@@ -177,7 +177,7 @@ namespace i2c_hid
         static constexpr size_t REPORT_LENGTH_SIZE = sizeof(uint16_t);
 
     public:
-        device(hid::application &app, const hid::product_info &pinfo,
+        device(hid::application& app, const hid::product_info& pinfo,
                 i2c::address address, uint16_t hid_descriptor_reg_address = registers::HID_DESCRIPTOR);
         ~device();
 
@@ -191,7 +191,7 @@ namespace i2c_hid
         {
             return _hid_descriptor_reg;
         }
-        void get_hid_descriptor(descriptor &desc) const
+        void get_hid_descriptor(descriptor& desc) const
         {
             // fill in the descriptors with the data from different sources
             desc.reset();
@@ -205,8 +205,8 @@ namespace i2c_hid
         }
 
     private:
-        hid::result send_report(const span<const uint8_t> &data, hid::report_type type);
-        hid::result receive_report(const span<uint8_t> &data);
+        hid::result send_report(const span<const uint8_t>& data, hid::report_type type);
+        hid::result receive_report(const span<uint8_t>& data);
 
         bool process_start(i2c::direction dir, size_t data_length);
         void process_stop(i2c::direction dir, size_t data_length);
@@ -217,19 +217,19 @@ namespace i2c_hid
             return reinterpret_cast<T*>(_buffer.data() + offset);
         }
 
-        bool queue_input_report(const span<const uint8_t> &data);
+        bool queue_input_report(const span<const uint8_t>& data);
 
         void send_short_data(uint16_t value);
         bool get_report(hid::report_selector select);
-        bool get_command(const span<const uint8_t> &command_data);
+        bool get_command(const span<const uint8_t>& command_data);
 
         bool reply_request(size_t data_length);
 
         bool get_input();
 
         void set_power(bool powered);
-        bool set_report(hid::report_type type, const span<const uint8_t> &data);
-        bool set_command(const span<const uint8_t> &command_data);
+        bool set_report(hid::report_type type, const span<const uint8_t>& data);
+        bool set_command(const span<const uint8_t>& command_data);
         void process_write(size_t data_length);
         void process_input_complete(size_t data_length);
         void process_reply_complete(size_t data_length);
@@ -242,8 +242,8 @@ namespace i2c_hid
         device& operator=(const device&&) = delete;
 
     private:
-        hid::application &_app;
-        const hid::product_info &_pinfo;
+        hid::application& _app;
+        const hid::product_info& _pinfo;
         i2c::address _bus_address;
         uint16_t _hid_descriptor_reg;
         uint8_t _stage = 0;

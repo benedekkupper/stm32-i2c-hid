@@ -47,7 +47,7 @@ namespace hid
         };
 
     public:
-        static demo_app &instance();
+        static demo_app& instance();
 
         void button_state_change(bool pressed);
 
@@ -63,15 +63,15 @@ namespace hid
         raw_in_report _raw_in_buffer;
         raw_out_report _raw_out_buffer;
 
-        constexpr explicit demo_app(const hid::report_protocol &rp)
+        constexpr explicit demo_app(const hid::report_protocol& rp)
             : application(rp)
         {
         }
 
         void start() override;
         void stop() override;
-        void set_report(report_type type, const span<const uint8_t> &data) override;
-        void get_report(report_selector select, const span<uint8_t> &buffer) override;
+        void set_report(report_type type, const span<const uint8_t>& data) override;
+        void get_report(report_selector select, const span<uint8_t>& buffer) override;
     };
 }
 

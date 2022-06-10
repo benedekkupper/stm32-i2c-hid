@@ -14,7 +14,7 @@ extern void set_led(bool on);
 
 using namespace hid;
 
-demo_app &demo_app::instance()
+demo_app& demo_app::instance()
 {
     using namespace hid::rdf;
 
@@ -63,7 +63,7 @@ void demo_app::button_state_change(bool pressed)
     }
 }
 
-void demo_app::set_report(report_type type, const span<const uint8_t> &data)
+void demo_app::set_report(report_type type, const span<const uint8_t>& data)
 {
     // only output reports provided
     assert(type == report_type::OUTPUT);
@@ -84,7 +84,7 @@ void demo_app::set_report(report_type type, const span<const uint8_t> &data)
     receive_report(&_raw_out_buffer);
 }
 
-void demo_app::get_report(report_selector select, const span<uint8_t> &buffer)
+void demo_app::get_report(report_selector select, const span<uint8_t>& buffer)
 {
     if (select == _keys_buffer.selector())
     {

@@ -13,7 +13,7 @@
 
 using namespace i2c;
 
-slave &slave::instance()
+slave& slave::instance()
 {
     static slave s;
     return s;

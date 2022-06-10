@@ -68,10 +68,10 @@ namespace i2c
     class slave
     {
     public:
-        static slave &instance();
+        static slave& instance();
 
         template<class T>
-        void register_module(address slave_addr, T *module, bool(T::*on_start)(direction dir, size_t data_length),
+        void register_module(address slave_addr, T* module, bool(T::*on_start)(direction dir, size_t data_length),
                 void(T::*on_stop)(direction dir, size_t data_length))
         {
             _module = reinterpret_cast<decltype(_module)>(module);
@@ -83,7 +83,7 @@ namespace i2c
         }
 
         template<class T>
-        void unregister_module(T *module)
+        void unregister_module(T* module)
         {
             if (_module == reinterpret_cast<void*>(module))
             {
@@ -98,38 +98,38 @@ namespace i2c
         void set_pin_interrupt(bool asserted);
 
         template <typename T>
-        void send(const T &a)
+        void send(const T& a)
         {
             send(a.data(), a.size());
         }
         template <typename T>
-        void send(T *a)
+        void send(T* a)
         {
             send(reinterpret_cast<const uint8_t*>(a), sizeof(T));
         }
         template <typename T1, typename T2>
-        void send(T1 *a, T2 b)
+        void send(T1* a, T2 b)
         {
             send(reinterpret_cast<const uint8_t*>(a), sizeof(T1), b.data(), b.size());
         }
         template <typename T1, typename T2>
-        void send(T1 &a, T2 &b)
+        void send(T1& a, T2& b)
         {
             send(a.data(), a.size(), b.data(), b.size());
         }
 
         template <typename T>
-        void receive(T &a)
+        void receive(T& a)
         {
             receive(a.data(), a.size());
         }
         template <typename T>
-        void receive(T *a)
+        void receive(T* a)
         {
             receive(reinterpret_cast<uint8_t*>(a), sizeof(T));
         }
         template <typename T1, typename T2>
-        void receive(T1 &a, T2 &b)
+        void receive(T1& a, T2& b)
         {
             receive(a.data(), a.size(), b.data(), b.size());
         }
@@ -147,10 +147,10 @@ namespace i2c
         void nack();
         void send_dummy();
 
-        void send(const uint8_t *data, size_t size);
-        void send(const uint8_t *data1, size_t size1, const uint8_t *data2, size_t size2);
-        void receive(uint8_t *data, size_t size);
-        void receive(uint8_t *data1, size_t size1, uint8_t *data2, size_t size2);
+        void send(const uint8_t* data, size_t size);
+        void send(const uint8_t* data1, size_t size1, const uint8_t* data2, size_t size2);
+        void receive(uint8_t* data, size_t size);
+        void receive(uint8_t* data1, size_t size1, uint8_t* data2, size_t size2);
 
         // non-copyable
         slave(const slave&) = delete;
@@ -160,12 +160,12 @@ namespace i2c
         slave& operator=(const slave&&) = delete;
 
     private:
-        void *_module = nullptr;
+        void* _module = nullptr;
         bool(*_on_start)(void *module, direction dir, size_t data_length) = nullptr;
         void(*_on_stop)(void *module, direction dir, size_t data_length) = nullptr;
         size_t _first_size;
         size_t _second_size;
-        uint8_t *_second_data;
+        uint8_t* _second_data;
         direction _last_dir;
     };
 }

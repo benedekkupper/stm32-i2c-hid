@@ -35,7 +35,7 @@ public:
     { return _set; }
     constexpr void clear()
     { _set = false; }
-    constexpr bool push(const T &value)
+    constexpr bool push(const T& value)
     {
         if (full())
         {
@@ -48,7 +48,7 @@ public:
             return true;
         }
     }
-    constexpr bool front(T &value)
+    constexpr bool front(T& value)
     {
         if (empty())
         {
@@ -60,7 +60,7 @@ public:
             return true;
         }
     }
-    constexpr bool pop(T &value)
+    constexpr bool pop(T& value)
     {
         if (empty())
         {

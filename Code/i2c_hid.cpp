@@ -12,7 +12,7 @@
 
 using namespace i2c_hid;
 
-device::device(hid::application &app, const hid::product_info &pinfo,
+device::device(hid::application& app, const hid::product_info& pinfo,
         i2c::address address, uint16_t hid_descriptor_reg_address)
     : _app(app), _pinfo(pinfo), _bus_address(address), _hid_descriptor_reg(hid_descriptor_reg_address)
 {
@@ -47,7 +47,7 @@ void device::link_reset()
     queue_input_report(span<const uint8_t>());
 }
 
-hid::result device::receive_report(const span<uint8_t> &data)
+hid::result device::receive_report(const span<uint8_t>& data)
 {
     if ((_output_buffer.size() == 0) or (_stage == 0))
     {
@@ -62,13 +62,13 @@ hid::result device::receive_report(const span<uint8_t> &data)
     }
 }
 
-hid::result device::send_report(const span<const uint8_t> &data, hid::report_type type)
+hid::result device::send_report(const span<const uint8_t>& data, hid::report_type type)
 {
     // if the function is invoked in the GET_REPORT callback context,
     // and the report type and ID matches, transmit immediately (without interrupt)
     if ((_get_report.type() == type) and ((_get_report.id() == 0) or (_get_report.id() == data.front())))
     {
-        auto &report_length = *get_buffer<le_uint16_t>();
+        auto& report_length = *get_buffer<le_uint16_t>();
         report_length = static_cast<uint16_t>(data.size());
 
         // send the length 2 bytes, followed by the report data
@@ -103,9 +103,9 @@ bool device::get_report(hid::report_selector select)
     return !_get_report.valid();
 }
 
-bool device::get_command(const span<const uint8_t> &command_data)
+bool device::get_command(const span<const uint8_t>& command_data)
 {
-    auto &cmd = *reinterpret_cast<const command<>*>(command_data.data());
+    auto& cmd = *reinterpret_cast<const command<>*>(command_data.data());
     auto cmd_size = cmd.size();
     uint16_t data_reg = *reinterpret_cast<const le_uint16_t*>(command_data.data() + cmd_size);
 
@@ -135,7 +135,7 @@ bool device::get_command(const span<const uint8_t> &command_data)
 
 void device::send_short_data(uint16_t value)
 {
-    short_data &data = *get_buffer<short_data>();
+    short_data& data = *get_buffer<short_data>();
 
     data.length = sizeof(data);
     data.value = value;
@@ -153,7 +153,7 @@ bool device::reply_request(size_t data_length)
         if (reg == _hid_descriptor_reg)
         {
             // HID descriptor tells the host the necessary parameters for communication
-            descriptor &desc = *get_buffer<descriptor>();
+            descriptor& desc = *get_buffer<descriptor>();
 
             get_hid_descriptor(desc);
             i2c::slave::instance().send(&desc);
@@ -162,7 +162,7 @@ bool device::reply_request(size_t data_length)
         else if (reg == registers::REPORT_DESCRIPTOR)
         {
             // Report descriptor lets the host interpret the raw report data
-            auto &rdesc = _app.report_protocol().descriptor;
+            auto& rdesc = _app.report_protocol().descriptor;
 
             i2c::slave::instance().send(rdesc);
             return true;
@@ -184,7 +184,7 @@ bool device::reply_request(size_t data_length)
     }
 }
 
-bool device::queue_input_report(const span<const uint8_t> &data)
+bool device::queue_input_report(const span<const uint8_t>& data)
 {
     i2c::slave::instance().set_pin_interrupt(true);
     return _in_queue.push(data);
@@ -196,7 +196,7 @@ bool device::get_input()
     span<const uint8_t> input_data;
     if (_in_queue.front(input_data) and (input_data.size() > 0))
     {
-        auto &report_length = *reinterpret_cast<le_uint16_t*>(_buffer.data());
+        auto& report_length = *reinterpret_cast<le_uint16_t*>(_buffer.data());
         report_length = static_cast<uint16_t>(input_data.size());
 
         i2c::slave::instance().send(&report_length, input_data);
@@ -204,7 +204,7 @@ bool device::get_input()
     else
     {
         // this is a reset, or the master is only checking our presence on the bus
-        auto &reset_sentinel = *reinterpret_cast<le_uint16_t*>(_buffer.data());
+        auto& reset_sentinel = *reinterpret_cast<le_uint16_t*>(_buffer.data());
         reset_sentinel = 0;
 
         i2c::slave::instance().send(&reset_sentinel);
@@ -257,7 +257,7 @@ void device::set_power(bool powered)
     }
 }
 
-bool device::set_report(hid::report_type type, const span<const uint8_t> &data)
+bool device::set_report(hid::report_type type, const span<const uint8_t>& data)
 {
     uint16_t length = *reinterpret_cast<const le_uint16_t*>(data.data());
     size_t report_length = length - sizeof(length);
@@ -297,12 +297,12 @@ bool device::set_report(hid::report_type type, const span<const uint8_t> &data)
     }
 }
 
-bool device::set_command(const span<const uint8_t> &command_data)
+bool device::set_command(const span<const uint8_t>& command_data)
 {
-    const auto &cmd = *reinterpret_cast<const command<>*>(command_data.data());
+    const auto& cmd = *reinterpret_cast<const command<>*>(command_data.data());
     auto cmd_size = cmd.size();
     uint16_t data_reg = *reinterpret_cast<const le_uint16_t*>(command_data.data() + cmd_size);
-    const short_data &u16_data = *reinterpret_cast<const short_data*>(command_data.data() + cmd_size + sizeof(data_reg));
+    const short_data& u16_data = *reinterpret_cast<const short_data*>(command_data.data() + cmd_size + sizeof(data_reg));
 
     switch (cmd.opcode())
     {
