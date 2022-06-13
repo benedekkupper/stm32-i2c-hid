@@ -1,9 +1,9 @@
-/// \file
+/// @file
 ///
-/// \author Benedek Kupper
-/// \date   2022
+/// @author Benedek Kupper
+/// @date   2022
 ///
-/// \copyright
+/// @copyright
 ///         This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 ///         If a copy of the MPL was not distributed with this file, You can obtain one at
 ///         https://mozilla.org/MPL/2.0/.
@@ -71,55 +71,55 @@ namespace hid
         }
 
     private:
-        /// \brief Initialize the application when the transport becomes active.
+        /// @brief Initialize the application when the transport becomes active.
         ///        The application must always start in REPORT protocol (as opposed to BOOT) mode.
         virtual void start()
         {
         }
 
-        /// \brief Stop and clean up the application when the transport is shut down.
+        /// @brief Stop and clean up the application when the transport is shut down.
         virtual void stop()
         {
         }
 
     public:
-        /// \brief Called by the transport when a report is received from the host.
-        ///        The report data is always loaded into the buffer provided by \ref receive_report call.
-        /// \param type: received report's type (either OUTPUT or FEATURE)
-        /// \param data: received report data
-        virtual void set_report(report_type type, const span<const uint8_t>& data) = 0;
+        /// @brief Called by the transport when a report is received from the host.
+        ///        The report data is always loaded into the buffer provided by @ref receive_report call.
+        /// @param type: received report's type (either OUTPUT or FEATURE)
+        /// @param data: received report data
+        virtual void set_report(report::type type, const span<const uint8_t>& data) = 0;
 
-        /// \brief Called by the transport when a synchronous report reading is requested
-        ///        by the host. Use \ref send_report to provide the requested report data.
-        /// \param select: identifies the requested report (either INPUT or FEATURE)
-        /// \param buffer: optional buffer space that is available for the report sending
-        virtual void get_report(report_selector select, const span<uint8_t>& buffer) = 0;
+        /// @brief Called by the transport when a synchronous report reading is requested
+        ///        by the host. Use @ref send_report to provide the requested report data.
+        /// @param select: identifies the requested report (either INPUT or FEATURE)
+        /// @param buffer: optional buffer space that is available for the report sending
+        virtual void get_report(report::selector select, const span<uint8_t>& buffer) = 0;
 
-        /// \brief Called by the transport when the host has received the INPUT report
-        ///        that was provided through a successful call of \ref send_report,
-        ///        outside of \ref get_report context.
-        /// \param data: the report data that was sent
+        /// @brief Called by the transport when the host has received the INPUT report
+        ///        that was provided through a successful call of @ref send_report,
+        ///        outside of @ref get_report context.
+        /// @param data: the report data that was sent
         virtual void in_report_sent(const span<const uint8_t>& data)
         {
         }
 
-        /// \brief Called by the transport when the host changes the power level of the link.
-        /// \note  This may happen outside of the operating time of the application
-        ///        (which is between \ref start and \ref stop)
-        /// \param enabled: whether the link is set to powered
+        /// @brief Called by the transport when the host changes the power level of the link.
+        /// @note  This may happen outside of the operating time of the application
+        ///        (which is between @ref start and @ref stop)
+        /// @param enabled: whether the link is set to powered
         virtual void set_power_mode(bool enabled)
         {
         }
 
     protected:
-        /// \brief  Send a report to the host.
-        /// \param  data: the report data to send
-        /// \param  type: either INPUT, or FEATURE (the latter only from \ref get_report call context)
-        /// \return OK           if transmission is scheduled,
+        /// @brief  Send a report to the host.
+        /// @param  data: the report data to send
+        /// @param  type: either INPUT, or FEATURE (the latter only from @ref get_report call context)
+        /// @return OK           if transmission is scheduled,
         ///         BUSY         if transport is busy with another report,
         ///         NO_TRANSPORT if transport is missing;
         ///         INVALID      if the buffer size is 0 or FEATURE report is provided from wrong context
-        result send_report(const span<const uint8_t>& data, report_type type = report_type::INPUT)
+        result send_report(const span<const uint8_t>& data, report::type type = report::type::INPUT)
         {
             if (data.size() == 0)
             {
@@ -135,19 +135,19 @@ namespace hid
             }
         }
 
-        /// \brief  Send a \ref hid::report type structure to the host.
-        /// \tparam T: a \ref hid::report type
-        /// \param  report: the report data to send
-        /// \return see \ref send_report above
+        /// @brief  Send a @ref hid::report::data type structure to the host.
+        /// @tparam T: a @ref hid::report::data type
+        /// @param  report: the report data to send
+        /// @return see @ref send_report above
         template <typename T>
         inline result send_report(const T* report)
         {
             return send_report(span<const uint8_t>(report->data(), sizeof(*report)), report->type());
         }
 
-        /// \brief  Request receiving the next OUT or FEATURE report into the provided buffer.
-        /// \param  data: The allocated buffer for receiving reports.
-        /// \return OK           if transport is available
+        /// @brief  Request receiving the next OUT or FEATURE report into the provided buffer.
+        /// @param  data: The allocated buffer for receiving reports.
+        /// @return OK           if transport is available
         ///         NO_TRANSPORT if transport is missing
         ///         INVALID      if the buffer size is 0
         result receive_report(const span<uint8_t>& data)
@@ -166,11 +166,11 @@ namespace hid
             }
         }
 
-        /// \brief  Request receiving the next OUT or FEATURE report into the provided
-        ///         \ref hid::report type buffer.
-        /// \tparam T: a \ref hid::report type
-        /// \param  report: the report buffer to receive into
-        /// \return see \ref receive_report above
+        /// @brief  Request receiving the next OUT or FEATURE report into the provided
+        ///         @ref hid::report::data type buffer.
+        /// @tparam T: a @ref hid::report::data type
+        /// @param  report: the report buffer to receive into
+        /// @return see @ref receive_report above
         template <typename T>
         inline result receive_report(T* report)
         {
@@ -178,19 +178,19 @@ namespace hid
         }
 
     public:
-        /// \brief  Indicates the currently selected protocol.
-        /// \return The current protocol, either REPORT (default) or BOOT.
+        /// @brief  Indicates the currently selected protocol.
+        /// @return The current protocol, either REPORT (default) or BOOT.
         virtual protocol get_protocol() const
         {
             return protocol::REPORT;
         }
 
-        /// \brief Called by the transport when the host wants to switch between default REPORT
+        /// @brief Called by the transport when the host wants to switch between default REPORT
         ///        and simplified BOOT protocol. BOOT protocol is only defined for USB
         ///        101 keyboard and mouse applications, and the support of BOOT protocol
         ///        is indicated by the USB HID interface descriptor.
-        /// \param new_protocol: the new protocol to continue operating with
-        /// \return true if successful, false otherwise
+        /// @param new_protocol: the new protocol to continue operating with
+        /// @return true if successful, false otherwise
         virtual bool set_protocol(protocol new_protocol)
         {
 #if 0
@@ -213,7 +213,7 @@ namespace hid
         }
 
         template<class T>
-        bool setup(T* tp, result(T::*sender)(const span<const uint8_t>& data, report_type type),
+        bool setup(T* tp, result(T::*sender)(const span<const uint8_t>& data, report::type type),
                 result(T::*receiver)(const span<uint8_t>& data))
         {
             if (teardown(tp) or !is_transport_valid())
@@ -249,7 +249,7 @@ namespace hid
     private:
         const hid::report_protocol& _report_protocol;
         void* _transport = nullptr;
-        result (*_send_report)   (void* transport, const span<const uint8_t>& data, report_type type) = nullptr;
+        result (*_send_report)   (void* transport, const span<const uint8_t>& data, report::type type) = nullptr;
         result (*_receive_report)(void* transport, const span<uint8_t>& data) = nullptr;
     };
 }

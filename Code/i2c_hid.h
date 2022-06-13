@@ -1,9 +1,9 @@
-/// \file
+/// @file
 ///
-/// \author Benedek Kupper
-/// \date   2022
+/// @author Benedek Kupper
+/// @date   2022
 ///
-/// \copyright
+/// @copyright
 ///         This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 ///         If a copy of the MPL was not distributed with this file, You can obtain one at
 ///         https://mozilla.org/MPL/2.0/.
@@ -99,7 +99,7 @@ namespace i2c_hid
         SET_PROTOCOL    = 0x7, // Request from HOST to DEVICE to set the protocol mode the device should be operating in.
     };
 
-    template<const uint8_t REPORT_ID = 0>
+    template<hid::report::id::type REPORT_ID = 0>
     class command
     {
         static constexpr bool EXTENDED = std::integral_constant<bool, (REPORT_ID >= 0xf)>::value;
@@ -109,7 +109,7 @@ namespace i2c_hid
             _buffer[0] = sleep;
             _buffer[1] = static_cast<uint8_t>(opcode);
         }
-        constexpr command(opcodes opcode, hid::report_type type)
+        constexpr command(opcodes opcode, hid::report::type type)
         {
             _buffer[0] = static_cast<uint8_t>(type) << 4;
             _buffer[1] = static_cast<uint8_t>(opcode);
@@ -136,17 +136,17 @@ namespace i2c_hid
         {
             return is_extended() ? 3 : 2;
         }
-        constexpr hid::report_type report_type() const
+        constexpr hid::report::type report_type() const
         {
-            return static_cast<hid::report_type>((_buffer[0] >> 4) & 0x3);
+            return static_cast<hid::report::type>((_buffer[0] >> 4) & 0x3);
         }
-        constexpr uint8_t report_id() const
+        constexpr hid::report::id::type report_id() const
         {
             return is_extended() ? _buffer[2] : _buffer[0] & 0xf;
         }
-        constexpr hid::report_selector report_selector() const
+        constexpr hid::report::selector report_selector() const
         {
-            return hid::report_selector(report_type(), report_id());
+            return hid::report::selector(this->report_type(), this->report_id());
         }
         constexpr bool sleep() const
         {
@@ -205,7 +205,7 @@ namespace i2c_hid
         }
 
     private:
-        hid::result send_report(const span<const uint8_t>& data, hid::report_type type);
+        hid::result send_report(const span<const uint8_t>& data, hid::report::type type);
         hid::result receive_report(const span<uint8_t>& data);
 
         bool process_start(i2c::direction dir, size_t data_length);
@@ -220,7 +220,7 @@ namespace i2c_hid
         bool queue_input_report(const span<const uint8_t>& data);
 
         void send_short_data(uint16_t value);
-        bool get_report(hid::report_selector select);
+        bool get_report(hid::report::selector select);
         bool get_command(const span<const uint8_t>& command_data);
 
         bool reply_request(size_t data_length);
@@ -228,7 +228,7 @@ namespace i2c_hid
         bool get_input();
 
         void set_power(bool powered);
-        bool set_report(hid::report_type type, const span<const uint8_t>& data);
+        bool set_report(hid::report::type type, const span<const uint8_t>& data);
         bool set_command(const span<const uint8_t>& command_data);
         void process_write(size_t data_length);
         void process_input_complete(size_t data_length);
@@ -248,7 +248,7 @@ namespace i2c_hid
         uint16_t _hid_descriptor_reg;
         uint8_t _stage = 0;
         bool _powered = false;
-        hid::report_selector _get_report {};
+        hid::report::selector _get_report {};
         span<uint8_t> _output_buffer {};
         simple_queue<span<const uint8_t>> _in_queue {};
         std::array<uint8_t, sizeof(descriptor)> _buffer {};

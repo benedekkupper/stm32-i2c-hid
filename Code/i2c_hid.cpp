@@ -1,9 +1,9 @@
-/// \file
+/// @file
 ///
-/// \author Benedek Kupper
-/// \date   2022
+/// @author Benedek Kupper
+/// @date   2022
 ///
-/// \copyright
+/// @copyright
 ///         This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 ///         If a copy of the MPL was not distributed with this file, You can obtain one at
 ///         https://mozilla.org/MPL/2.0/.
@@ -62,7 +62,7 @@ hid::result device::receive_report(const span<uint8_t>& data)
     }
 }
 
-hid::result device::send_report(const span<const uint8_t>& data, hid::report_type type)
+hid::result device::send_report(const span<const uint8_t>& data, hid::report::type type)
 {
     // if the function is invoked in the GET_REPORT callback context,
     // and the report type and ID matches, transmit immediately (without interrupt)
@@ -79,7 +79,7 @@ hid::result device::send_report(const span<const uint8_t>& data, hid::report_typ
 
         return hid::result::OK;
     }
-    else if (type == hid::report_type::INPUT)
+    else if (type == hid::report::type::INPUT)
     {
         return queue_input_report(data) ? hid::result::OK : hid::result::BUSY;
     }
@@ -91,7 +91,7 @@ hid::result device::send_report(const span<const uint8_t>& data, hid::report_typ
     }
 }
 
-bool device::get_report(hid::report_selector select)
+bool device::get_report(hid::report::selector select)
 {
     // mark which report needs to be redirected through the data register
     _get_report = select;
@@ -257,7 +257,7 @@ void device::set_power(bool powered)
     }
 }
 
-bool device::set_report(hid::report_type type, const span<const uint8_t>& data)
+bool device::set_report(hid::report::type type, const span<const uint8_t>& data)
 {
     uint16_t length = *reinterpret_cast<const le_uint16_t*>(data.data());
     size_t report_length = length - sizeof(length);
@@ -372,7 +372,7 @@ void device::process_write(size_t data_length)
     if (reg == registers::OUTPUT_REPORT)
     {
         // output report received
-        set_report(hid::report_type::OUTPUT, data.subspan(sizeof(reg)));
+        set_report(hid::report::type::OUTPUT, data.subspan(sizeof(reg)));
     }
     else if (reg == registers::COMMAND)
     {

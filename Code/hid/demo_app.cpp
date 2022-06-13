@@ -1,9 +1,9 @@
-/// \file
+/// @file
 ///
-/// \author Benedek Kupper
-/// \date   2022
+/// @author Benedek Kupper
+/// @date   2022
 ///
-/// \copyright
+/// @copyright
 ///         This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 ///         If a copy of the MPL was not distributed with this file, You can obtain one at
 ///         https://mozilla.org/MPL/2.0/.
@@ -17,20 +17,21 @@ using namespace hid;
 demo_app& demo_app::instance()
 {
     using namespace hid::rdf;
+    using namespace hid::page;
 
     static constexpr auto report_descriptor = descriptor(
         // first application: standard keyboard
-        hid::reports::keyboard::app_report_descriptor<report_ids::KEYBOARD>(),
+        hid::app::keyboard::app_report_descriptor<report_ids::KEYBOARD>(),
 
         // second application: standard mouse
-        hid::reports::mouse::app_report_descriptor<report_ids::MOUSE>(),
+        hid::app::mouse::app_report_descriptor<report_ids::MOUSE>(),
 
         // third application: raw data
         usage_extended(custom_page::APPLICATION),
         collection::application(
-            hid::reports::opaque::report_descriptor<raw_in_report>(custom_page::IN_DATA),
+            hid::app::opaque::report_descriptor<raw_in_report>(custom_page::IN_DATA),
 
-            hid::reports::opaque::report_descriptor<raw_out_report>(custom_page::OUT_DATA)
+            hid::app::opaque::report_descriptor<raw_out_report>(custom_page::OUT_DATA)
         )
     );
     static constexpr hid::report_protocol rp(report_descriptor);
@@ -46,6 +47,7 @@ demo_app& demo_app::instance()
 
 void demo_app::start()
 {
+    send_report(&_keys_buffer);
     receive_report(&_raw_out_buffer);
 }
 
@@ -63,10 +65,10 @@ void demo_app::button_state_change(bool pressed)
     }
 }
 
-void demo_app::set_report(report_type type, const span<const uint8_t>& data)
+void demo_app::set_report(report::type type, const span<const uint8_t>& data)
 {
     // only output reports provided
-    assert(type == report_type::OUTPUT);
+    assert(type == report::type::OUTPUT);
 
     // data[0] is the report ID only if report IDs are used
     if (data[0] == kb_leds_report::id())
@@ -84,7 +86,7 @@ void demo_app::set_report(report_type type, const span<const uint8_t>& data)
     receive_report(&_raw_out_buffer);
 }
 
-void demo_app::get_report(report_selector select, const span<uint8_t>& buffer)
+void demo_app::get_report(report::selector select, const span<uint8_t>& buffer)
 {
     if (select == _keys_buffer.selector())
     {
@@ -100,6 +102,6 @@ void demo_app::get_report(report_selector select, const span<uint8_t>& buffer)
     }
     else
     {
-        assert(false);
+        //assert(false);
     }
 }

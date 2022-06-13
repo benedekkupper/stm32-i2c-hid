@@ -1,9 +1,9 @@
-/// \file
+/// @file
 ///
-/// \author Benedek Kupper
-/// \date   2022
+/// @author Benedek Kupper
+/// @date   2022
 ///
-/// \copyright
+/// @copyright
 ///         This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 ///         If a copy of the MPL was not distributed with this file, You can obtain one at
 ///         https://mozilla.org/MPL/2.0/.
@@ -12,9 +12,9 @@
 #define __HID_DEMO_APP_H_
 
 #include "hid/application.h"
-#include "hid/reports/keyboard.h"
-#include "hid/reports/mouse.h"
-#include "hid/reports/opaque.h"
+#include "hid/app/keyboard.h"
+#include "hid/app/mouse.h"
+#include "hid/app/opaque.h"
 
 namespace hid
 {
@@ -51,11 +51,11 @@ namespace hid
 
         void button_state_change(bool pressed);
 
-        using keys_report    = reports::keyboard::keys_input_report<report_ids::KEYBOARD>;
-        using kb_leds_report = reports::keyboard::output_report<report_ids::KEYBOARD>;
-        using mouse_report   = reports::mouse::report<report_ids::MOUSE>;
-        using raw_in_report  = reports::opaque::report<32, report_type::INPUT, report_ids::OPAQUE>;
-        using raw_out_report = reports::opaque::report<32, report_type::OUTPUT, report_ids::OPAQUE>;
+        using keys_report    = app::keyboard::keys_input_report<report_ids::KEYBOARD>;
+        using kb_leds_report = app::keyboard::output_report<report_ids::KEYBOARD>;
+        using mouse_report   = app::mouse::report<report_ids::MOUSE>;
+        using raw_in_report  = app::opaque::report<32, report::type::INPUT, report_ids::OPAQUE>;
+        using raw_out_report = app::opaque::report<32, report::type::OUTPUT, report_ids::OPAQUE>;
 
     private:
         keys_report _keys_buffer;
@@ -70,8 +70,8 @@ namespace hid
 
         void start() override;
         void stop() override;
-        void set_report(report_type type, const span<const uint8_t>& data) override;
-        void get_report(report_selector select, const span<uint8_t>& buffer) override;
+        void set_report(report::type type, const span<const uint8_t>& data) override;
+        void get_report(report::selector select, const span<uint8_t>& buffer) override;
     };
 }
 
