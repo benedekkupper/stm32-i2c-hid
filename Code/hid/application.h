@@ -35,6 +35,16 @@ namespace hid
             storage[1] = (major_high_nibble << 4) | (major_low_nibble & 0xf);
             storage[0] = (minor_high_nibble << 4) | (minor_low_nibble & 0xf);
         }
+
+        constexpr uint8_t major() const
+        {
+            return storage[1];
+        }
+
+        constexpr uint8_t minor() const
+        {
+            return storage[0];
+        }
     };
 
     struct product_info
