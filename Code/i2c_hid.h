@@ -28,7 +28,7 @@ constexpr T pack_str(const char* str)
 
 namespace i2c_hid
 {
-    constexpr hid::version SPEC_VERSION {1, 0};
+    constexpr static hid::version SPEC_VERSION {1, 0};
 
     struct descriptor
     {
@@ -102,7 +102,7 @@ namespace i2c_hid
     template<hid::report::id::type REPORT_ID = 0>
     class command
     {
-        static constexpr bool EXTENDED = std::integral_constant<bool, (REPORT_ID >= 0xf)>::value;
+        constexpr static bool EXTENDED = std::integral_constant<bool, (REPORT_ID >= 0xf)>::value;
     public:
         constexpr command(opcodes opcode, bool sleep = false)
         {
@@ -174,7 +174,7 @@ namespace i2c_hid
             OUTPUT_REPORT     = pack_str<uint16_t>("OR"),
         };
 
-        static constexpr size_t REPORT_LENGTH_SIZE = sizeof(uint16_t);
+        constexpr static std::size_t REPORT_LENGTH_SIZE = sizeof(std::uint16_t);
 
     public:
         device(hid::application& app, const hid::product_info& pinfo,
