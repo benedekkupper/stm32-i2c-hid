@@ -24,6 +24,15 @@ FW of your choice of silicon.
 To successfully build the software, the HID usage pages must be generated into the `hid-rdf/include/hid/page/` path,
 using the [hid-usage-tables] project.
 
+## Customizing the HID application
+
+You can easily extend the HID functionality by modifying the report descriptor and adapting the app code.
+Either find the existing application and usages in the HID usage tables,
+or define your own vendor-specific usage page(s) - even by adding them to your [hid-usage-tables] fork.
+The [hid-rdf] library allows you to perform compile-time verification of the report descriptor,
+helping you avoid some mistakes. This verification isn't all-encompassing,
+and it relies on C++ exceptions. That's why there is a separate *Compile* build configuration with exceptions enabled, which is only meant to be compiled, but not flashed.
+
 ## Host configuration
 
 This project is tested with a Raspberry Pi 400, please refer to [this guide][raspberry-guide] on how to
@@ -32,4 +41,5 @@ configure a Linux kernel to use HID over I2C.
 
 [32F072BDISCOVERY]: https://www.st.com/en/evaluation-tools/32f072bdiscovery.html
 [hid-usage-tables]: https://github.com/IntergatedCircuits/hid-usage-tables
+[hid-rdf]: https://github.com/IntergatedCircuits/hid-rdf
 [raspberry-guide]: https://github.com/NordicPlayground/nrf52-i2c-hid-demo/blob/master/Raspbian/Raspbian_HID-Over-I2C_README.md
