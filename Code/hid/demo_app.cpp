@@ -47,7 +47,6 @@ demo_app& demo_app::instance()
 
 void demo_app::start()
 {
-    send_report(&_keys_buffer);
     receive_report(&_raw_out_buffer);
 }
 
@@ -102,6 +101,6 @@ void demo_app::get_report(report::selector select, const span<uint8_t>& buffer)
     }
     else
     {
-        //assert(false);
+        assert(false);
     }
 }
