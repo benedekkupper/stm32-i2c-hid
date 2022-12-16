@@ -36,6 +36,10 @@ demo_app& demo_app::instance()
     );
     static constexpr hid::report_protocol rp(report_descriptor);
 
+    static_assert(rp.descriptor.tag_value_unsigned_most(rdf::global::tag::REPORT_ID,
+            [](const std::uint32_t& most, const std::uint32_t& current) {
+        return most < current;
+    })->value_unsigned() == report_ids::MAX);
     static_assert(rp.max_input_size == sizeof(raw_in_report));
     static_assert(rp.max_output_size == sizeof(raw_out_report));
     static_assert(rp.max_feature_size == 0);

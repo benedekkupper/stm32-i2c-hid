@@ -160,6 +160,11 @@ namespace i2c_hid
     {
         le_uint16_t length;
         le_uint16_t value;
+
+        constexpr bool valid_size() const
+        {
+            return length == static_cast<uint16_t>(sizeof(*this));
+        }
     };
 
     class device

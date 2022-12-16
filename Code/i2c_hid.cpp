@@ -16,7 +16,7 @@ device::device(hid::application& app, const hid::product_info& pinfo,
         i2c::address address, uint16_t hid_descriptor_reg_address)
     : _app(app), _pinfo(pinfo), _bus_address(address), _hid_descriptor_reg(hid_descriptor_reg_address)
 {
-    i2c::slave::instance().register_module(address, this, &device::process_start, &device::process_stop);
+    i2c::slave::instance().register_module<device, &device::process_start, &device::process_stop>(this, address);
 }
 
 device::~device()
@@ -338,8 +338,7 @@ bool device::set_command(const span<const uint8_t>& command_data)
 
         case opcodes::SET_IDLE:
             if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) or
-                (data_reg != registers::DATA) or
-                (u16_data.length != sizeof(short_data)))
+                (data_reg != registers::DATA) or not u16_data.valid_size())
             {
                 // invalid size or register
                 return false;
@@ -350,8 +349,7 @@ bool device::set_command(const span<const uint8_t>& command_data)
         case opcodes::SET_PROTOCOL:
             // SPEC WTF: why isn't the 8-bit protocol value in the command_data.data instead of in the data register?
             if ((command_data.size() != (cmd_size + sizeof(data_reg) + sizeof(short_data))) or
-                (data_reg != registers::DATA) or
-                (u16_data.length != sizeof(short_data)))
+                (data_reg != registers::DATA) or not u16_data.valid_size())
             {
                 // invalid size or register
                 return false;
@@ -399,7 +397,7 @@ void device::process_input_complete(size_t data_length)
         if (input_data.size() == 0)
         {
             // completed reset, initialize applications
-            _app.setup(this, &device::send_report, &device::receive_report);
+            _app.setup<device, &device::send_report, &device::receive_report>(this);
         }
         else
         {

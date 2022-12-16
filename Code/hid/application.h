@@ -222,15 +222,21 @@ namespace hid
             return _transport != nullptr;
         }
 
-        template<class T>
-        bool setup(T* tp, result(T::*sender)(const span<const uint8_t>& data, report::type type),
-                result(T::*receiver)(const span<uint8_t>& data))
+        template<class T, result(T::*SEND)(const span<const uint8_t>&, report::type),
+                result(T::*RECEIVE)(const span<uint8_t>&)>
+        bool setup(T* tp)
         {
             if (teardown(tp) or !is_transport_valid())
             {
-                _send_report    = reinterpret_cast<decltype(_send_report)>(sender);
-                _receive_report = reinterpret_cast<decltype(_receive_report)>(receiver);
-                _transport      = reinterpret_cast<decltype(_transport)>(tp);
+                _send_report = [](void* t, const span<const uint8_t>& data, report::type type) {
+                    T* p = static_cast<T*>(t);
+                    return (p->*SEND)(data, type);
+                };
+                _receive_report = [](void* t, const span<uint8_t>& data) {
+                    T* p = static_cast<T*>(t);
+                    return (p->*RECEIVE)(data);
+                };
+                _transport = static_cast<decltype(_transport)>(tp);
 
                 start();
                 return true;
@@ -244,7 +250,7 @@ namespace hid
         template<class T>
         bool teardown(T* tp)
         {
-            if (reinterpret_cast<decltype(_transport)>(tp) == _transport)
+            if (static_cast<decltype(_transport)>(tp) == _transport)
             {
                 stop();
                 _transport = nullptr;

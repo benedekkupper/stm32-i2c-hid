@@ -70,13 +70,19 @@ namespace i2c
     public:
         static slave& instance();
 
-        template<class T>
-        void register_module(address slave_addr, T* module, bool(T::*on_start)(direction dir, size_t data_length),
-                void(T::*on_stop)(direction dir, size_t data_length))
+        template<class T, bool(T::*ON_START)(direction, size_t), void(T::*ON_STOP)(direction, size_t)>
+        void register_module(T* module, address slave_addr)
         {
-            _module = reinterpret_cast<decltype(_module)>(module);
-            _on_start = reinterpret_cast<decltype(_on_start)>(on_start);
-            _on_stop = reinterpret_cast<decltype(_on_stop)>(on_stop);
+            _on_start = [](void* m, direction dir, size_t s) {
+                T* p = static_cast<T*>(m);
+                return (p->*ON_START)(dir, s);
+            };
+            _on_stop = [](void* m, direction dir, size_t s) {
+                T* p = static_cast<T*>(m);
+                (p->*ON_STOP)(dir, s);
+            };
+            _module = static_cast<decltype(_module)>(module);
+
             // single module use case
             set_slave_address(slave_addr);
             start_listen();
@@ -85,11 +91,12 @@ namespace i2c
         template<class T>
         void unregister_module(T* module)
         {
-            if (_module == reinterpret_cast<void*>(module))
+            if (_module == static_cast<void*>(module))
             {
                 _module = nullptr;
                 _on_start = nullptr;
                 _on_stop = nullptr;
+
                 // single module use case, just shut down entirely
                 stop_listen();
             }
