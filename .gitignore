@@ -42,7 +42,6 @@
 *Debug.launch
 *Release.launch
 .build
-.project
 .settings
 _autosave*
 build

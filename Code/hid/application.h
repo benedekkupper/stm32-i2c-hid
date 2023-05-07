@@ -13,9 +13,9 @@
 
 #include <cerrno>
 #include "base_types.h"
-#include "hid/report.h"
-#include "hid/report_protocol.h"
-#include "hid/rdf/descriptor_view.h"
+#include "hid/report.hpp"
+#include "hid/report_protocol.hpp"
+#include "hid/rdf/descriptor_view.hpp"
 
 namespace hid
 {

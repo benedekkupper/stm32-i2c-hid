@@ -74,7 +74,7 @@ void demo_app::set_report(report::type type, const span<const uint8_t>& data)
     assert(type == report::type::OUTPUT);
 
     // data[0] is the report ID only if report IDs are used
-    if (data[0] == kb_leds_report::id())
+    if (data[0] == kb_leds_report::ID)
     {
         auto *out_report = reinterpret_cast<const kb_leds_report*>(data.data());
 

@@ -12,9 +12,9 @@
 #define __HID_DEMO_APP_H_
 
 #include "hid/application.h"
-#include "hid/app/keyboard.h"
-#include "hid/app/mouse.h"
-#include "hid/app/opaque.h"
+#include "hid/app/keyboard.hpp"
+#include "hid/app/mouse.hpp"
+#include "hid/app/opaque.hpp"
 
 namespace hid
 {
