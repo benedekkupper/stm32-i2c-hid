@@ -21,7 +21,7 @@ FW of your choice of silicon.
 
 ## Usage pages
 
-To successfully build the software, the HID usage pages must be generated into the `hid-rdf/include/hid/page/` path,
+To successfully build the software, the HID usage pages must be generated into the `hid-rdf/hid-rp/hid/page/` path,
 using the [hid-usage-tables] project.
 
 ## Customizing the HID application
