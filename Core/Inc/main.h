@@ -52,6 +52,8 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_I2C2_Init(void);
+void MX_I2C1_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -96,8 +98,7 @@ void Error_Handler(void);
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
-void   MX_I2C2_Init(void);
-void   MX_I2C1_Init(void);
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -107,5 +108,3 @@ void   MX_I2C1_Init(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

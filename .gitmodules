@@ -1,9 +1,3 @@
-[submodule "etl"]
-	path = etl
-	url = https://github.com/ETLCPP/etl.git
-[submodule "hid-rdf"]
-	path = hid-rdf
-	url = https://github.com/IntergatedCircuits/hid-rp.git
 [submodule "Drivers/CMSIS/Core"]
 	path = Drivers/CMSIS/Core
 	url = https://github.com/STMicroelectronics/cmsis_core.git
@@ -13,3 +7,9 @@
 [submodule "Drivers/STM32F0xx_HAL_Driver"]
 	path = Drivers/STM32F0xx_HAL_Driver
 	url = https://github.com/STMicroelectronics/stm32f0xx_hal_driver.git
+[submodule "stm32header"]
+	path = stm32header
+	url = https://github.com/IntergatedCircuits/stm32header.git
+[submodule "c2usb"]
+	path = c2usb
+	url = https://github.com/IntergatedCircuits/c2usb.git

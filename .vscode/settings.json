@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.conf": "bitbake",
+        "*.inc": "bitbake",
+        "span": "cpp",
+        "random": "cpp",
+        "array": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "stm32cmsis.h": "c",
+        "stm32f0xx.h": "c",
+        "stm32f072xb.h": "c",
+        "core_cm0.h": "c"
+    }
+}

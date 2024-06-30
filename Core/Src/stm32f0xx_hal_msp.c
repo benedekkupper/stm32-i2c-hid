@@ -70,6 +70,7 @@ extern DMA_HandleTypeDef hdma_i2c2_tx;
   */
 void HAL_MspInit(void)
 {
+
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
@@ -288,5 +289,3 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
