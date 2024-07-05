@@ -31,10 +31,6 @@ add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(c2usb)
 add_subdirectory(${PROJECT_NAME})
 
-target_sources(${PROJECT_NAME} PRIVATE
-    startup_stm32f072xb.s
-)
-
 target_include_directories(${PROJECT_NAME} PRIVATE
     Core/Inc
     stm32header
