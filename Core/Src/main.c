@@ -108,6 +108,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    __WFI();
   }
   /* USER CODE END 3 */
 }
