@@ -30,9 +30,10 @@ set(TARGET_FLAGS "-mcpu=cortex-m0 ")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TARGET_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdata-sections -ffunction-sections ")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra ")
 # skip warnings
 if(FALSE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpedantic ")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)

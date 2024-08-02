@@ -15,6 +15,7 @@ extern "C" void _fini(void) {}
 extern "C" void __register_exitproc(void) {}
 
 void operator delete(void*, unsigned int) {}
+void operator delete(void*) {}
 
 /* needed to avoid pulling in a lot of library code */
 #ifndef NDEBUG

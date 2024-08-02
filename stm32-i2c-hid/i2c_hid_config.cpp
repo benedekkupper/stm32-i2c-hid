@@ -63,23 +63,23 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
-extern "C" void HAL_I2C_AddrCallback(I2C_HandleTypeDef* hi2c, uint8_t TransferDirection,
-                                     uint16_t AddrMatchCode)
+extern "C" void HAL_I2C_AddrCallback([[maybe_unused]] I2C_HandleTypeDef* hi2c,
+                                     uint8_t TransferDirection, uint16_t AddrMatchCode)
 {
     get_i2c_slave().handle_start(static_cast<i2c::direction>(TransferDirection));
 }
 
-extern "C" void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef* hi2c)
+extern "C" void HAL_I2C_ListenCpltCallback([[maybe_unused]] I2C_HandleTypeDef* hi2c)
 {
     get_i2c_slave().handle_stop();
 }
 
-extern "C" void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef* hi2c)
+extern "C" void HAL_I2C_SlaveTxCpltCallback([[maybe_unused]] I2C_HandleTypeDef* hi2c)
 {
     get_i2c_slave().handle_tx_complete();
 }
 
-extern "C" void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef* hi2c)
+extern "C" void HAL_I2C_SlaveRxCpltCallback([[maybe_unused]] I2C_HandleTypeDef* hi2c)
 {
     get_i2c_slave().handle_rx_complete();
 }

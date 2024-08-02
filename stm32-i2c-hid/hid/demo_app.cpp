@@ -53,7 +53,7 @@ demo_app& demo_app::instance()
     return app;
 }
 
-void demo_app::start(protocol prot)
+void demo_app::start([[maybe_unused]] protocol prot)
 {
     receive_report(&_raw_out_buffer);
 }
@@ -70,7 +70,7 @@ void demo_app::button_state_change(bool pressed)
     }
 }
 
-void demo_app::set_report(report::type type, const std::span<const uint8_t>& data)
+void demo_app::set_report([[maybe_unused]] report::type type, const std::span<const uint8_t>& data)
 {
     // only output reports provided
     assert(type == report::type::OUTPUT);
@@ -91,7 +91,8 @@ void demo_app::set_report(report::type type, const std::span<const uint8_t>& dat
     receive_report(&_raw_out_buffer);
 }
 
-void demo_app::get_report(report::selector select, const std::span<uint8_t>& buffer)
+void demo_app::get_report(report::selector select,
+                          [[maybe_unused]] const std::span<uint8_t>& buffer)
 {
     if (select == _keys_buffer.selector())
     {

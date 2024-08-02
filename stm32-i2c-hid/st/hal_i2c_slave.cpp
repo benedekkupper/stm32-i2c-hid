@@ -61,7 +61,7 @@ void hal_i2c_slave::start_listen()
     HAL_I2C_EnableListen_IT(handle_);
 }
 
-void hal_i2c_slave::stop_listen(i2c::address slave_addr)
+void hal_i2c_slave::stop_listen([[maybe_unused]] i2c::address slave_addr)
 {
     HAL_I2C_DisableListen_IT(handle_);
 }
