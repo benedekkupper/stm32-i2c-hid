@@ -40,3 +40,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     stm32cubemx
     c2usb
 )
+
+add_custom_command(OUTPUT ${PROJECT_NAME}.hex
+    DEPENDS ${PROJECT_NAME}
+    COMMAND ${CMAKE_OBJCOPY} -Oihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+add_custom_target(hex
+    DEPENDS ${PROJECT_NAME}.hex
+)

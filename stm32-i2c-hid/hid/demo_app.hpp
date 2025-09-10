@@ -15,26 +15,26 @@
 #include "hid/app/mouse.hpp"
 #include "hid/app/opaque.hpp"
 #include "hid/application.hpp"
+#include "hid/report_protocol.hpp"
 
-namespace hid
+namespace hid::page
 {
-namespace page
+enum class custom_page : uint8_t;
+template <>
+constexpr inline auto get_info<custom_page>()
 {
-enum class custom_page : std::uint8_t
-{
+    return info(0xFF00, 0x0003, "Custom",
+                [](hid::usage_id_t id) { return id ? "Custom {}" : nullptr; });
+}
+enum class custom_page : uint8_t {
     APPLICATION = 0x0001,
     IN_DATA = 0x0002,
     OUT_DATA = 0x0003,
 };
-template <>
-struct info<custom_page>
-{
-    constexpr static page_id_t page_id = 0xff01;
-    constexpr static usage_id_t max_usage_id = 3;
-    constexpr static const char* name = "vendor";
-};
-} // namespace page
+} // namespace hid::page
 
+namespace hid
+{
 class demo_app : public hid::application
 {
     enum report_ids : uint8_t

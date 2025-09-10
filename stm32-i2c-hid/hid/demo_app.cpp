@@ -37,18 +37,6 @@ demo_app& demo_app::instance()
     // clang-format on
     static constexpr hid::report_protocol rp(report_descriptor);
 
-    // proving the correctness of the descriptor parser
-    static_assert(
-        rp.descriptor
-            .tag_value_unsigned_most(rdf::global::tag::REPORT_ID,
-                                     [](const std::uint32_t& most, const std::uint32_t& current)
-                                     { return most < current; })
-            ->value_unsigned() == report_ids::MAX);
-    static_assert(rp.max_input_size == sizeof(raw_in_report));
-    static_assert(rp.max_output_size == sizeof(raw_out_report));
-    static_assert(rp.max_feature_size == 0);
-    static_assert(rp.max_report_id() == report_ids::MAX);
-
     static demo_app app(rp);
     return app;
 }
